@@ -4,4 +4,4 @@ streamlit==1.29.0
 matplotlib==3.7.1
 googletrans==3.0.0
 scikit-learn==1.2.2
-
+google-colab==1.0.0
