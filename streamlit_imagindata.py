@@ -17,7 +17,6 @@ import streamlit as st
 import numpy as np
 import seaborn as sns
 import pandas as pd
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors import NearestNeighbors
 import requests
 from googletrans import Translator
