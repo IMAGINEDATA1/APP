@@ -43,7 +43,10 @@ def main():
 if __name__ == "__main__":
 
 #CHARGER LES DATAFRAMES
-
+# Remplacez l'URL par l'URL brute de votre fichier CSV sur GitHub
+url = "https://raw.githubusercontent.com/username/repository/master/fichier.csv"
+# Charger le fichier CSV dans un DataFrame
+dataframe = pd.read_csv(url)
 
 df_KNN = pd.read_csv('C:/Users/Bolaty/Desktop/WILD CODE SCHOOL/Projet/Projet 2/STREAMLIT/PROJET2/t_KNN.csv', sep="/t")
 
