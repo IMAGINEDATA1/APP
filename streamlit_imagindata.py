@@ -137,10 +137,6 @@ def get_movie_details(movie_id):
 
 # Création de la recommandation basée sur KNN
 
-# Standardisation : pour les mettre à la même échelle afin que le modèle soit plus performant
-#scaler = StandardScaler()
-#X = scaler.fit(df_KNN[['runtimeMinutes', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery', 'averageRating', 'numVotes', 'popularity', 'vote_average', 'vote_count', 'score_popularity_film']])
-#X = scaler.transform(df_KNN[['runtimeMinutes', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery', 'averageRating', 'numVotes', 'popularity', 'vote_average', 'vote_count', 'score_popularity_film']])
 
 # Créer une barre de recherche avec autocomplétion
 
