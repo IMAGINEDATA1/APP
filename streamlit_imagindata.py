@@ -141,41 +141,55 @@ X = df_KNN[['runtimeMinutes', 'original_language', 'Action', 'Adventure', 'Biogr
 X = X.dropna()
 
 # Standardisation : pour les mettre à la même échelle afin que le modèle soit plus performant
-scaler = StandardScaler()
-X = scaler.fit(df_KNN[['runtimeMinutes', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery', 'averageRating', 'numVotes', 'popularity', 'vote_average', 'vote_count', 'score_popularity_film']])
-X = scaler.transform(df_KNN[['runtimeMinutes', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery', 'averageRating', 'numVotes', 'popularity', 'vote_average', 'vote_count', 'score_popularity_film']])
+#scaler = StandardScaler()
+#X = scaler.fit(df_KNN[['runtimeMinutes', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery', 'averageRating', 'numVotes', 'popularity', 'vote_average', 'vote_count', 'score_popularity_film']])
+#X = scaler.transform(df_KNN[['runtimeMinutes', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery', 'averageRating', 'numVotes', 'popularity', 'vote_average', 'vote_count', 'score_popularity_film']])
 
 modelNN = NearestNeighbors(n_neighbors=5)
 modelNN.fit(X)
 
 # Créer une barre de recherche avec autocomplétion
 
-user_input_film  = st.text_input("Tapez votre recherche", " ")
+# Utilisateur saisit nom du film
+user_input_film = st.text_input("Tapez votre recherche", " ")
 
 # Check si nom du film est dans le df
 if user_input_film in df_KNN['primaryTitle'].values:
+    # Extraire les caractéristiques du film saisi par l'utilisateur
+    user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
+
+    # Entraîner le modèle sur l'ensemble complet des caractéristiques
+    X_all = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
+    modelNN = NearestNeighbors(n_neighbors=5)
+    modelNN.fit(X_all)
+
     # Définition des voisins les plus proches du film saisi par l'utilisateur
-    neighbors = modelNN.kneighbors(df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['runtimeMinutes', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery', 'averageRating', 'numVotes', 'popularity', 'vote_average', 'vote_count', 'score_popularity_film']])
+    neighbors = modelNN.kneighbors(user_film_features.values)
     neighbors_indices = neighbors[1][0]
 
+    # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
+    user_language = user_film_features['original_language'].values[0]
+    filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
+
     # Exclusion du film saisi par l'utilisateur de la liste des recommandations
-    neighbors_indices = [index for index in neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
+    filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
 
     # Résultats recommandations
-    neighbors_names = df_KNN['primaryTitle'].iloc[neighbors_indices]
+    neighbors_names = df_KNN['primaryTitle'].iloc[filtered_neighbors_indices]
 
-    st.write(f"\nPour : {user_input_film}")
-    st.write(neighbors_names)
+    print(f"\nPour : {user_input_film}")
+    print(neighbors_names)
 
 else:
-  # Si le film n'a pas été trouvé
-    st.write(f"\nLe film '{user_input_film}' n'a pas été trouvé dans la base de données.")
+    # Si le film n'a pas été trouvé
+    print(f"\nLe film '{user_input_film}' n'a pas été trouvé dans la base de données.")
 
-   # 4 films choisis aléatoirement comme recommandations
-    random_recos= random.sample(df_KNN['primaryTitle'].tolist(), 4)
+    # 4 films choisis aléatoirement comme recommandations
+    random_recos = random.sample(df_KNN['primaryTitle'].tolist(), 4)
 
-    st.write("Vous ne trouvez pas ? Voici quelques unes de mes idées :")
-    st.write(random_recos)
+    print("Vous ne trouvez pas ? Voici quelques unes de mes idées :")
+    print(random_recos)
+
 
 
 
