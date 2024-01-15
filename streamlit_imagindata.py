@@ -18,10 +18,29 @@ import requests
 from googletrans import Translator
 
 #Fonction pour traduire le texte
-def translate_text(text, target_lang):
+def translate_page(page_content, target_language='en'):
     translator = Translator()
-    translation = translator.translate(text, dest=target_lang)
-    return translation.text
+    translated_content = translator.translate(page_content, dest=target_language)
+    return translated_content.text
+
+def main():
+    st.title("App de Recommandation de films")
+
+    # Contenu initial
+    page_content = """
+    Bienvenue dans cette application de recommandation de films.
+    Essayez de cliquer sur le bouton de traduction pour voir le contenu dans une autre langue!
+    """
+
+    # Affichage du contenu initial
+    st.markdown(page_content)
+
+    # Bouton de traduction
+    if st.button("Traduire en anglais"):
+        translated_content = translate_page(page_content, target_language='en')
+        st.markdown(translated_content)
+
+if __name__ == "__main__":
 
 #CHARGER LES DATAFRAMES
 
