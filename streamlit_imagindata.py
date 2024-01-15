@@ -16,6 +16,8 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 import requests
 from googletrans import Translator
+import random 
+
 
 #Définir le thème personnalisé
 
