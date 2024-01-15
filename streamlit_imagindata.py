@@ -17,6 +17,33 @@ from sklearn.preprocessing import StandardScaler
 import requests
 from googletrans import Translator
 
+#Définir le thème personnalisé
+
+st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
+
+page_bg_img = """
+<style>
+[data-testid = "stAppViewContainer"] {
+primaryColor: "#3498db";
+background-color: "#f0f0f0";
+secondaryBackgroundColor: "#d3d3d3";
+textColor: "#2c3e50";
+font: "sans-serif";
+opacity: 0.8;
+background-image: radial-gradient(#444cf7 0.5px, #e5e5f7 0.5px);
+background-size: 10px 10px; }
+</style>
+"""
+
+
+# TITRE
+st.title("🎥 App de Recommandation de films")
+
+# SOUS TITRE
+st.header("Dis moi quels sont tes goûts et je te ferai découvrir de nouveaux films 💡🎬")
+
+
+
 #Fonction pour traduire le texte
 def translate_page(page_content, target_language='en'):
     translator = Translator()
@@ -48,32 +75,6 @@ if __name__ == "__main__":
 #Remplacez l'URL par l'URL brute de votre fichier CSV sur GitHub
 #Charger le fichier CSV dans un DataFrame
 df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
-
-#Définir le thème personnalisé
-
-st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
-
-page_bg_img = """
-<style>
-[data-testid = "stAppViewContainer"] {
-primaryColor: "#3498db";
-background-color: "#f0f0f0";
-secondaryBackgroundColor: "#d3d3d3";
-textColor: "#2c3e50";
-font: "sans-serif";
-opacity: 0.8;
-background-image: radial-gradient(#444cf7 0.5px, #e5e5f7 0.5px);
-background-size: 10px 10px; }
-</style>
-"""
-
-
-# TITRE
-st.title("🎥 App de Recommandation de films")
-
-# SOUS TITRE
-st.header("Dis moi quels sont tes goûts et je te ferai découvrir de nouveaux films 💡🎬")
-
 
 
 # REQUETE API
