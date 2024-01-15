@@ -40,12 +40,12 @@ def main():
         translated_content = translate_page(page_content, target_language='en')
         st.markdown(translated_content)
 
-if __name__ == "__main__":
+if __name__ == "__main__"
 
 #CHARGER LES DATAFRAMES
     
-# Remplacez l'URL par l'URL brute de votre fichier CSV sur GitHub
-# Charger le fichier CSV dans un DataFrame
+#Remplacez l'URL par l'URL brute de votre fichier CSV sur GitHub
+#Charger le fichier CSV dans un DataFrame
 df_KNN = pd.read_csv("https://github.com/IMAGINEDATA1/APP/blob/main/t_KNN.csv")
 
 #Définir le thème personnalisé
