@@ -40,7 +40,8 @@ def main():
         translated_content = translate_page(page_content, target_language='en')
         st.markdown(translated_content)
 
-#if __name__ == "__main__"
+if __name__ == "__main__":
+    main()
 
 #CHARGER LES DATAFRAMES
     
