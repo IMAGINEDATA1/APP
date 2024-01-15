@@ -47,7 +47,7 @@ if __name__ == "__main__":
     
 #Remplacez l'URL par l'URL brute de votre fichier CSV sur GitHub
 #Charger le fichier CSV dans un DataFrame
-df_KNN = pd.read_csv("https://github.com/IMAGINEDATA1/APP/blob/main/t_KNN.csv")
+df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN.csv")
 
 #Définir le thème personnalisé
 
