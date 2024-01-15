@@ -23,20 +23,6 @@ import random
 
 st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
 
-page_bg_img = """
-<style>
-[data-testid = "stAppViewContainer"] {
-primaryColor: "#3498db";
-background-color: "#f0f0f0";
-secondaryBackgroundColor: "#d3d3d3";
-textColor: "#2c3e50";
-font: "sans-serif";
-opacity: 0.8;
-background-image: radial-gradient(#444cf7 0.5px, #e5e5f7 0.5px);
-background-size: 10px 10px; }
-</style>
-"""
-
 
 # TITRE
 st.title("🎥 App de Recommandation de films")
@@ -79,59 +65,6 @@ if __name__ == "__main__":
 df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
 
 
-# REQUETE API
-
-
-# Fonction pour obtenir les informations d'un film à partir de l'API TMDb
-def get_movie_details(movie_id):
-    api_key = "db38952c66997974559ef641200fc25e"
-    base_url = "https://api.themoviedb.org/3/movie/"
-    endpoint = str(movie_id)
-    url = f"{base_url}{endpoint}?api_key={api_key}"
-
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return None
-
-
-        # Obtenir les informations du film depuis l'API TMDb
-        tmdb_movie_details = get_movie_details(movie_details['MovieDB_ID'])
-
-        if tmdb_movie_details:
-            # Afficher l'image du film
-            st.image(f"https://image.tmdb.org/t/p/w500/{tmdb_movie_details['poster_path']}", caption=movie_title, use_column_width=True)
-
-            # Afficher le titre, la tagline et l'aperçu en survol de la souris
-            st.markdown(f"**Titre:** {tmdb_movie_details['primaryTitle']}")
-            st.markdown(f"**Tagline:** {tmdb_movie_details['tagline']}")
-            st.markdown(f"**Aperçu:** {tmdb_movie_details['overview']}")
-
-            # Afficher d'autres détails du film
-            st.write(f"**Note IMDb:** {movie_details['averageRating']}")
-            st.write(f"**Nombre de votes:** {tmdb_movie_details['vote_count']}")
-            st.write(f"**Durée:** {tmdb_movie_details['runtimeMinutes']} minutes")
-            st.write(f"**Genre:** {', '.join([genre['primaryName'] for genre in tmdb_movie_details['genre1']])}")
-
-            # Acteurs
-            st.write("**Acteurs:**")
-            for cast_member in tmdb_movie_details['credits']['cast'][:3]:
-                st.write(f"- {cast_member['primaryName']}")
-
-            # Réalisateurs
-            st.write("**Réalisateurs:**")
-            for crew_member in tmdb_movie_details['credits']['crew']:
-                if crew_member['job'] == 'Director':
-                    st.write(f"- {crew_member['primaryName']}")
-
-                else:
-                    st.info("Commencez à taper pour rechercher des films.")
-
-
-
-
-
 # Création d'une barre de recherche avec autocomplétion et KNN
 
 
@@ -167,8 +100,10 @@ if user_input_film in df_KNN['primaryTitle'].values:
     # Résultats recommandations
     neighbors_names = df_KNN['primaryTitle'].iloc[filtered_neighbors_indices]
 
-    st.write(f"\nPour : {user_input_film}")
-    st.write(neighbors_names)
+    # Afficher les résultats de manière structurée
+    st.subheader(f"Résultats de recommandation pour '{user_input_film}':")
+    for i, movie_title in enumerate(neighbors_names, start=1):
+        st.write(f"{i}. {movie_title}")
 
 else:
     # Si le film n'a pas été trouvé
@@ -178,10 +113,60 @@ else:
     random_recos = random.sample(df_KNN['primaryTitle'].tolist(), 4)
 
     st.write("Vous ne trouvez pas ? Voici quelques unes de mes idées :")
-    st.write(random_recos)
+    for i, movie_title in enumerate(random_recos, start=1):
+        st.write(f"{i}. {movie_title}")
 
 
+#REQUETE API 
 
+# Fonction pour obtenir les informations d'un film à partir de l'API TMDb
+def get_movie_details(movie_id):
+    api_key = "db38952c66997974559ef641200fc25e"
+    base_url = "https://api.themoviedb.org/3/movie/"
+    endpoint = str(movie_id)
+    url = f"{base_url}{endpoint}?api_key={api_key}"
+
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
+# Utilisation de la fonction dans le contexte de votre script
+user_input_film = st.text_input("Tapez votre recherche", " ") 
+movie_details = get_movie_details(user_input_film)
+
+if movie_details:
+    # Afficher l'image du film
+    poster_path = movie_details.get('poster_path')
+    if poster_path:
+        st.image(f"https://image.tmdb.org/t/p/w500/{poster_path}", caption=movie_details.get('title'), use_column_width=True)
+
+    # Afficher d'autres détails du film
+    st.markdown(f"**Titre:** {movie_details.get('title')}")
+    st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
+    st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
+
+    # Afficher d'autres détails du film (Note IMDb, nombre de votes, durée, genre, acteurs, réalisateurs)
+    st.write(f"**Note IMDb:** {movie_details.get('averageRating')}")
+    st.write(f"**Nombre de votes:** {movie_details.get('vote_count')}")
+    st.write(f"**Durée:** {movie_details.get('runtimeMinutes')} minutes")
+    st.write(f"**Genre:** {', '.join([genre['primaryName'] for genre in movie_details.get('genre1', [])])}")
+
+    # Acteurs
+    st.write("**Acteurs:**")
+    cast_members = movie_details.get('credits', {}).get('cast', [])[:3]
+    for cast_member in cast_members:
+        st.write(f"- {cast_member.get('primaryName')}")
+
+    # Réalisateurs
+    st.write("**Réalisateurs:**")
+    crew_members = movie_details.get('credits', {}).get('crew', [])
+    directors = [crew_member.get('primaryName') for crew_member in crew_members if crew_member.get('job') == 'Director']
+    for director in directors:
+        st.write(f"- {director}")
+else:
+    st.info("Film non trouvé ou erreur lors de la récupération des détails.")
 
 
 # SOUS-TITRE
