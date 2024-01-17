@@ -86,8 +86,8 @@ def main():
     user_input_film = st.text_input("Tapez votre recherche", " ")
     selected_movie = st.selectbox("Résultats de recherche", df_KNN['primaryTitle'].unique(), key='search_results')
 
-    if selected_movie:
-        user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == selected_movie, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
+    if user_input_film:
+        user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
 
         # Entraîner le modèle sur l'ensemble complet des caractéristiques
         X_all = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
@@ -103,14 +103,14 @@ def main():
         filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
 
         # Exclusion du film saisi par l'utilisateur de la liste des recommandations
-        filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == selected_movie].index[0]]
+        filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
 
         # Résultats recommandations
         neighbors_names = df_KNN['primaryTitle'].iloc[filtered_neighbors_indices]
         display_recommendations(neighbors_names)
 
         # Requête API pour obtenir les détails du film sélectionné
-        movie_details = get_movie_details(df_KNN.loc[df_KNN['primaryTitle'] == selected_movie, 'tconst'].values[0])
+        movie_details = get_movie_details(df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, 'tconst'].values[0])
         display_movie_details(movie_details)
 
     else:
