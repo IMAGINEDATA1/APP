@@ -114,7 +114,6 @@ def main():
         display_movie_details(movie_details)
 
     else:
-       
         # Si le film n'a pas été trouvé
         st.write(f"\nLe film '{user_input_film}' n'a pas été trouvé dans la base de données.")
 
@@ -123,12 +122,10 @@ def main():
 
         st.write("Vous ne trouvez pas ? Voici quelques unes de mes idées :")
         for i, movie_title in enumerate(random_recos, start=1):
-        st.write(f"{i}. {movie_title}")
+            st.write(f"{i}. {movie_title}")
 
+    # SOUS-TITRE
+    st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
 if __name__ == "__main__":
     main()
-
-
-# SOUS-TITRE
-st.subheader("Bonne séance ! 🍿🍿🍿 ")
