@@ -1,3 +1,4 @@
+[theme]
 
 # Primary accent for interactive elements
 primaryColor = '#7792E3'
@@ -15,8 +16,3 @@ textColor = '#2c3e50'
 # Accepted values (serif | sans serif | monospace) 
 # Default: "sans serif"
 font = "sans serif"
-
-background-image = radial-gradient(#444cf7 0.5px, #e5e5f7 0.5px)
-    
-background-size = 10px 10px
-
