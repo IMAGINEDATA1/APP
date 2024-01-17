@@ -83,7 +83,16 @@ def main():
     df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
 
     # Barre de recherche avec autocomplétion
-    user_input_film = st.text_input("Tapez votre recherche")
+    user_input_film = st.text_input("Tapez votre recherche", df_KNN['primaryTitle'].iloc[0])
+
+    # Vérifier si la recherche dans 'primaryTitle' ne donne pas de résultats
+    if user_input_film not in df_KNN['primaryTitle'].values:
+    # Si la recherche ne donne pas de résultats, essayer dans 'primaryName'
+       user_input_film = st.text_input("Tapez votre recherche", df_KNN['primaryName'].iloc[0])
+
+    # Vérifier à nouveau si la recherche dans 'primaryName' ne donne pas de résultats
+       if user_input_film not in df_KNN['primaryName'].values:
+        st.warning("Aucun résultat trouvé pour la recherche spécifiée.")
 
 
     if user_input_film:
