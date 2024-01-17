@@ -50,7 +50,7 @@ def display_movie_details(movie_details):
         st.write(f"**Nombre de votes:** {movie_details.get('vote_count')}")
         st.write(f"**Durée:** {movie_details.get('runtime')} minutes")
         st.write(f"**Genre:** {', '.join([genre['name'] for genre in movie_details.get('genres', [])])}")
-        st.write("**Acteurs:**{', '.join([acteurs['name'] for acteurs in movie_details.get('acteur', [])])}"))
+        st.write("**Acteurs:**"))
         cast_members = movie_details.get('credits', {}).get('cast', [])[:3]
         for cast_member in cast_members:
             st.write(f"- {cast_member.get('name')}")
