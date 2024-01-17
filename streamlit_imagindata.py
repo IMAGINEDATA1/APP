@@ -110,7 +110,7 @@ def main():
         display_recommendations(neighbors_names)
 
         # Requête API pour obtenir les détails du film sélectionné
-        movie_details = get_movie_details(df_KNN.loc[df_KNN['primaryTitle'] == selected_movie, 'tmdbId'].values[0])
+        movie_details = get_movie_details(df_KNN.loc[df_KNN['primaryTitle'] == selected_movie, 'tconst'].values[0])
         display_movie_details(movie_details)
 
     else:
