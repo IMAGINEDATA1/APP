@@ -118,8 +118,6 @@ def main():
         user_language = user_film_features['original_language'].values[0]
         filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
 
-        # Exclusion du film saisi par l'utilisateur de la liste des recommandations
-        filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
 
         # Résultats recommandations
         display_recommendations(filtered_neighbors_indices, df_KNN)
