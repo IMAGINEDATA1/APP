@@ -91,7 +91,7 @@ def main():
     df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
 
     # Barre de recherche pour la recommandation
-    user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryTitle'].iloc[0])
+    user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur")
 
     # Vérifier si la recherche dans 'primaryTitle' ne donne pas de résultats
     if user_input_film not in df_KNN['primaryTitle'].values:
