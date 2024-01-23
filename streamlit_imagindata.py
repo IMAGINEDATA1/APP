@@ -2,36 +2,11 @@ import streamlit as st
 import pandas as pd
 import requests
 from sklearn.neighbors import NearestNeighbors
-from googletrans import Translator
-from translate import Translator
 import random
 
 # Définir le thème personnalisé
 st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
 
-
-
-# Bouton de traduction
-current_language = st.session_state.get('current_language', 'fr')
-if st.button("Traduire"):
-    st.session_state.current_language = 'en' if current_language == 'fr' else 'fr'
-
-# Contenu initial
-page_content = """
-Bienvenue dans cette application de recommandation de films.
-Essayez de cliquer sur le bouton de traduction pour voir le contenu dans une autre langue!
-"""
-
-# Fonction pour traduire le texte
-def translate_page(page_content, target_language='en'):
-    translator = Translator(to_lang=target_language, service_urls=['translate.googleapis.com'])
-    translated_content = translator.translate(page_content)
-
-    return translated_content
-
-# Affichage du contenu traduit
-page_content_translated = translate_page(page_content, target_language=current_language)
-st.markdown(page_content_translated)
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
