@@ -6,12 +6,7 @@ from googletrans import Translator
 import random
 
 # Définir le thème personnalisé
-st.set_page_config(
-    page_title="🎥 App de Recommandation de films",
-    page_icon=":🎞️:",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded"  )
 
 # Fonction pour traduire le texte
 
@@ -101,7 +96,7 @@ def main():
     # Vérifier si la recherche dans 'primaryTitle' ne donne pas de résultats
     if user_input_film not in df_KNN['primaryTitle'].values:
         # Si la recherche ne donne pas de résultats, essayer dans 'primaryName'
-        user_input_film = st.text_input("Tapez votre recherche", df_KNN['primaryName'].iloc[0])
+        user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryName'].iloc[0])
 
     # Vérifier à nouveau si la recherche dans 'primaryName' ne donne pas de résultats
     if user_input_film not in df_KNN['primaryName'].values:
@@ -134,7 +129,7 @@ def main():
         st.write(f"\nLe film '{user_input_film}' n'a pas été trouvé dans la base de données.")
 
         # 4 films choisis aléatoirement comme recommandations
-        random_recos_indices = random.sample(range(len(df_KNN)), 4)
+        random_recos_indices = random.sample(range(len(df_KNN['primaryTitle'])), 4)
         display_recommendations(random_recos_indices, df_KNN)
 
     # SOUS-TITRE
