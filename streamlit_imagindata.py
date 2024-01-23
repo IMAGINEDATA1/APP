@@ -14,11 +14,30 @@ st.set_page_config(
 )
 
 # Fonction pour traduire le texte
+
+
 def translate_page(page_content, target_language='en'):
     translator = Translator()
     translated_content = translator.translate(page_content, dest=target_language)
     return translated_content.text
 
+
+# Contenu initial
+    page_content = """
+    Bienvenue dans cette application de recommandation de films.
+    Essayez de cliquer sur le bouton de traduction pour voir le contenu dans une autre langue!
+    """
+
+    # Bouton de traduction
+    current_language = st.session_state.get('current_language', 'fr')
+    if st.button("Traduire"):
+        st.session_state.current_language = 'en' if current_language == 'fr' else 'fr'
+
+    # Affichage du contenu traduit
+    page_content_translated = translate_page(page_content, target_language=current_language)
+    st.markdown(page_content_translated)
+
+    
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
     api_key = "db38952c66997974559ef641200fc25e"
@@ -72,21 +91,7 @@ def display_movie_details(movie_details):
 def main():
     st.title("App de Recommandation de films")
 
-    # Contenu initial
-    page_content = """
-    Bienvenue dans cette application de recommandation de films.
-    Essayez de cliquer sur le bouton de traduction pour voir le contenu dans une autre langue!
-    """
-
-    # Bouton de traduction
-    current_language = st.session_state.get('current_language', 'fr')
-    if st.button("Traduire"):
-        st.session_state.current_language = 'en' if current_language == 'fr' else 'fr'
-
-    # Affichage du contenu traduit
-    page_content_translated = translate_page(page_content, target_language=current_language)
-    st.markdown(page_content_translated)
-
+   
     # Charger le DataFrame depuis l'URL
     df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
 
