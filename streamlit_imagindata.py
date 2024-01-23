@@ -21,14 +21,24 @@ def get_movie_details(movie_id):
     else:
         return None
 
+
+# Fonction pour afficher le film 
+def display_user_input_film(user_input_film, df_KNN):
+    st.subheader(f"Résultat de la recherche:")
+    for i, index in enumerate(user_input_film, start=1):
+        movie_title = df_KNN.loc[index, 'primaryTitle']
+        st.write(f"{i}. {movie_title}")
+        # Requête API pour obtenir les détails du film recommandé
+        movie_details = get_movie_details(df_KNN.loc[index, 'tconst'])
+        display_movie_details(movie_details)
+
+
 # Fonction pour afficher les résultats de recommandation de manière structurée
 def display_recommendations(neighbors_indices, df_KNN):
     st.subheader(f"Résultats de recommandation:")
     for i, index in enumerate(neighbors_indices, start=1):
         movie_title = df_KNN.loc[index, 'primaryTitle']
         st.write(f"{i}. {movie_title}")
-        # Afficher les caractéristiques du film recommandé
-        st.write(f"   Caractéristiques: {df_KNN.loc[index, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]}")
         # Requête API pour obtenir les détails du film recommandé
         movie_details = get_movie_details(df_KNN.loc[index, 'tconst'])
         display_movie_details(movie_details)
