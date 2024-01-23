@@ -6,33 +6,29 @@ from googletrans import Translator
 import random
 
 # Définir le thème personnalisé
-st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded"  )
+st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
+
+# Contenu initial
+page_content = """
+Bienvenue dans cette application de recommandation de films.
+Essayez de cliquer sur le bouton de traduction pour voir le contenu dans une autre langue!
+"""
 
 # Fonction pour traduire le texte
-
-
 def translate_page(page_content, target_language='en'):
     translator = Translator()
     translated_content = translator.translate(page_content, dest=target_language)
     return translated_content.text
 
+# Bouton de traduction
+current_language = st.session_state.get('current_language', 'fr')
+if st.button("Traduire"):
+    st.session_state.current_language = 'en' if current_language == 'fr' else 'fr'
 
-# Contenu initial
-    page_content = """
-    Bienvenue dans cette application de recommandation de films.
-    Essayez de cliquer sur le bouton de traduction pour voir le contenu dans une autre langue!
-    """
+# Affichage du contenu traduit
+page_content_translated = translate_page(page_content, target_language=current_language)
+st.markdown(page_content_translated)
 
-    # Bouton de traduction
-    current_language = st.session_state.get('current_language', 'fr')
-    if st.button("Traduire"):
-        st.session_state.current_language = 'en' if current_language == 'fr' else 'fr'
-
-    # Affichage du contenu traduit
-    page_content_translated = translate_page(page_content, target_language=current_language)
-    st.markdown(page_content_translated)
-
-    
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
     api_key = "db38952c66997974559ef641200fc25e"
@@ -69,7 +65,7 @@ def display_movie_details(movie_details):
         st.write(f"**Nombre de votes:** {movie_details.get('vote_count')}")
         st.write(f"**Durée:** {movie_details.get('runtime')} minutes")
         st.write(f"**Genre:** {', '.join([genre['name'] for genre in movie_details.get('genres', [])])}")
-        
+
         st.write("**Acteurs:**")
         cast_members = movie_details.get('credits', {}).get('cast', [])[:3]
         for cast_member in cast_members:
@@ -86,7 +82,6 @@ def display_movie_details(movie_details):
 def main():
     st.title("App de Recommandation de films")
 
-   
     # Charger le DataFrame depuis l'URL
     df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
 
@@ -98,9 +93,9 @@ def main():
         # Si la recherche ne donne pas de résultats, essayer dans 'primaryName'
         user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryName'].iloc[0])
 
-    # Vérifier à nouveau si la recherche dans 'primaryName' ne donne pas de résultats
-    if user_input_film not in df_KNN['primaryName'].values:
-        st.warning("Aucun résultat trouvé pour la recherche spécifiée.")
+        # Vérifier à nouveau si la recherche dans 'primaryName' ne donne pas de résultats
+        if user_input_film not in df_KNN['primaryName'].values:
+            st.warning("Aucun résultat trouvé pour la recherche spécifiée.")
 
     if user_input_film:
         user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
@@ -118,7 +113,6 @@ def main():
         user_language = user_film_features['original_language'].values[0]
         filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
 
-
         # Résultats recommandations
         display_recommendations(filtered_neighbors_indices, df_KNN)
 
@@ -134,4 +128,4 @@ def main():
     st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
 if __name__ == "__main__":
-    main()
+      main()
