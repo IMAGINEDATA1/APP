@@ -22,20 +22,17 @@ def get_movie_details(movie_id):
         return None
 
 
-# Fonction pour afficher le film 
-def display_user_input_film(user_input_film, df_KNN):
-    st.subheader(f"Résultat de la recherche:")
-    for i, index in enumerate(user_input_film, start=1):
-        movie_title = df_KNN.loc[index, 'primaryTitle']
-        st.write(f"{i}. {movie_title}")
-        # Requête API pour obtenir les détails du film recommandé
-        movie_details = get_movie_details(df_KNN.loc[index, 'tconst'])
-        display_movie_details(movie_details)
 
-
-# Fonction pour afficher les résultats de recommandation de manière structurée
-def display_recommendations(neighbors_indices, df_KNN):
-    st.subheader(f"Résultats de recommandation:")
+def display_recommandations(user_film, neighbors_indices, df_KNN):
+    st.subheader(f"Résultats de la recherche:")
+    
+    # Afficher le film choisi par l'utilisateur
+    st.subheader(f"Film choisi:")
+    user_movie_details = get_movie_details(user_film.values[0])
+    display_movie_details(user_movie_details)
+    
+    # Afficher les films recommandés
+    st.subheader(f"Autres films recommandés:")
     for i, index in enumerate(neighbors_indices, start=1):
         movie_title = df_KNN.loc[index, 'primaryTitle']
         st.write(f"{i}. {movie_title}")
@@ -103,7 +100,7 @@ def main():
         filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
 
         # Résultats recommandations
-        display_recommendations(filtered_neighbors_indices, df_KNN)
+        display_recommandations(user_film_features, filtered_neighbors_indices, df_KNN)
 
     else:
         # Si le film n'a pas été trouvé
@@ -111,7 +108,7 @@ def main():
 
         # 4 films choisis aléatoirement comme recommandations
         random_recos_indices = random.sample(range(len(df_KNN['primaryTitle'])), 4)
-        display_recommendations(random_recos_indices, df_KNN)
+        display_recommandations(random_recos_indices, df_KNN)
 
     # SOUS-TITRE
     st.subheader("Bonne séance ! 🍿🍿🍿 ")
