@@ -4,8 +4,45 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 import random
 
-st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
-st.title("App de Recommandation de films")
+# Fonction principale
+def main():
+    st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
+    st.title("App de Recommandation de films")
+
+    # Charger le DataFrame depuis l'URL
+    df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
+
+    # Barre de recherche pour la recommandation
+    user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryTitle'].iloc[0])
+
+    if user_input_film:
+        user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
+
+        # Entraîner le modèle sur l'ensemble complet des caractéristiques
+        X_all = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
+        modelNN = NearestNeighbors(n_neighbors=5)
+        modelNN.fit(X_all)
+
+        # Définition des voisins les plus proches du film saisi par l'utilisateur
+        neighbors = modelNN.kneighbors(user_film_features.values)
+        neighbors_indices = neighbors[1][0]
+
+        # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
+        user_language = user_film_features['original_language'].values[0]
+        filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
+
+        # Affichage du choix de l'utilisateur et des recommandations
+        display_user_choice(user_input_film)
+        display_recommandations(filtered_neighbors_indices, df_KNN)
+
+    else:
+        st.warning("Aucun résultat trouvé pour la recherche spécifiée.")
+
+        # 4 films choisis aléatoirement comme recommandations
+        random_recos_indices = random.sample(range(len(df_KNN['primaryTitle'])), 4)
+        display_recommandations(random_recos_indices, df_KNN)
+
+    st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
@@ -45,12 +82,10 @@ def display_movie_details(movie_details):
     else:
         st.info("Film non trouvé ou erreur lors de la récupération des détails.")
 
-
 # Fonction pour afficher le choix de l'utilisateur
 def display_user_choice(user_input_film):
-    user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryTitle'].iloc[0])  # Barre de recherche pour la recommandation
     user_movie_details = get_movie_details(user_input_film)
-    st.write(f"- {user_movie_details}")
+    st.subheader("Votre choix:")
     display_movie_details(user_movie_details)
 
 # Fonction pour afficher les recommandations
@@ -59,41 +94,7 @@ def display_recommandations(random_recos_indices, df_KNN):
     for index in random_recos_indices:
         movie_title = df_KNN.loc[index, 'primaryTitle']
         st.write(f"- {movie_title}")
-        display_movie_details(movie_title)
+        display_movie_details(get_movie_details(df_KNN.loc[index, 'tconst']))
 
-
-
-    # Charger le DataFrame depuis l'URL
-    df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
-
-    # Barre de recherche pour la recommandation
-    user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryTitle'].iloc[0])
-
-    if user_input_film:
-        user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
-
-        # Entraîner le modèle sur l'ensemble complet des caractéristiques
-        X_all = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
-        modelNN = NearestNeighbors(n_neighbors=5)
-        modelNN.fit(X_all)
-
-        # Définition des voisins les plus proches du film saisi par l'utilisateur
-        neighbors = modelNN.kneighbors(user_film_features.values)
-        neighbors_indices = neighbors[1][0]
-
-        # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
-        user_language = user_film_features['original_language'].values[0]
-        filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
-
-        # Affichage du choix de l'utilisateur et des recommandations
-        display_user_choice(user_input_film)
-        display_recommandations(filtered_neighbors_indices, df_KNN)
-
-    else:
-        st.warning("Aucun résultat trouvé pour la recherche spécifiée.")
-
-        # 4 films choisis aléatoirement comme recommandations
-        random_recos_indices = random.sample(range(len(df_KNN['primaryTitle'])), 4)
-        display_recommandations(random_recos_indices, df_KNN)
-
-    st.subheader("Bonne séance ! 🍿🍿🍿 ")
+if __name__ == "__main__":
+    main()
