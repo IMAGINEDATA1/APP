@@ -4,6 +4,12 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 import random
 
+
+# Fonction principale
+def main():
+    st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
+    st.title("App de Recommandation de films")
+
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
     api_key = "db38952c66997974559ef641200fc25e"
@@ -20,7 +26,7 @@ def get_movie_details(movie_id):
 # Fonction pour afficher les détails du film à partir de l'API TMDb
 def display_movie_details(movie_details):
     if movie_details:
-        st.image(f"https://image.tmdb.org/t/p/w500/{movie_details.get('poster_path')}", caption=movie_details.get('title'), use_column_width=True)
+        st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_details.get('title'), use_column_width=True)
         st.markdown(f"**Titre:** {movie_details.get('title')}")
         st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
         st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
@@ -45,23 +51,20 @@ def display_movie_details(movie_details):
 
 # Fonction pour afficher le choix de l'utilisateur
 def display_user_choice(user_input_film):
-    st.subheader("Recherchez par titre, acteur ou réalisateur")
+    user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryTitle'].iloc[0])  # Barre de recherche pour la recommandation
     user_movie_details = get_movie_details(user_input_film)
+    st.write(f"- {user_movie_details}")
     display_movie_details(user_movie_details)
 
 # Fonction pour afficher les recommandations
-def display_recommandations(neighbors_indices, df_KNN):
+def display_recommandations(random_recos_indices, df_KNN):
     st.subheader("Autres films recommandés:")
-    for index in neighbors_indices:
+    for index in random_recos_indices:
         movie_title = df_KNN.loc[index, 'primaryTitle']
         st.write(f"- {movie_title}")
-        # Affichage réduit de l'image
-        st.image(f"https://image.tmdb.org/t/p/w200/{df_KNN.loc[index, 'poster_path']}", use_column_width=False)
+        display_movie_details(movie_title)
 
-# Fonction principale
-def main():
-    st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
-    st.title("App de Recommandation de films")
+
 
     # Charger le DataFrame depuis l'URL
     df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
