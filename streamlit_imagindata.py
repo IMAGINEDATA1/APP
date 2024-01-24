@@ -69,18 +69,15 @@ def display_user_choice(user_input_film, df_KNN):
 def display_recommandations(random_recos_indices, df_KNN):
     st.subheader("Autres films recommandés:")
 
-    # Utiliser des colonnes pour afficher les recommandations
-    col1, col2, col3, col4, col5 = st.columns(5)
+    # Utiliser des colonnes pour afficher les recommandations en ligne
+    cols = st.columns(len(random_recos_indices))
 
     # Afficher les informations sur chaque recommandation
-    for col, index in zip([col1, col2, col3, col4, col5], random_recos_indices):
+    for col, index in zip(cols, random_recos_indices):
         movie_title = df_KNN.loc[index, 'primaryTitle']
-        # Utiliser un bouton pour afficher les détails du film en pop-up
-        if col.button(f"{movie_title}"):
-            movie_details = get_movie_details(df_KNN.loc[index, 'tconst'])
-            st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_title, width=150, use_column_width=False)
-            display_movie_details(movie_details)
-
+        movie_details = get_movie_details(df_KNN.loc[index, 'tconst'])
+        col.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_title, width=150, use_column_width=False)
+        col.button(movie_title, key=f"button_{index}", on_click=display_movie_popup, args=(movie_details,))
 
 # Fonction pour afficher les détails du film dans une fenêtre pop-up
 def display_movie_popup(movie_details):
