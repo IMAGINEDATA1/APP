@@ -1,12 +1,8 @@
 import streamlit as st
-import pandas as pd
 import requests
+import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 import random
-
-# Définir le thème personnalisé
-st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
-
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
@@ -20,25 +16,6 @@ def get_movie_details(movie_id):
         return response.json()
     else:
         return None
-
-
-
-def display_recommandations(user_film, neighbors_indices, df_KNN):
-    st.subheader(f"Résultats de la recherche:")
-    
-    # Afficher le film choisi par l'utilisateur
-    st.subheader(f"Film choisi:")
-    user_movie_details = get_movie_details(user_film.values[0])
-    display_movie_details(user_movie_details)
-    
-    # Afficher les films recommandés
-    st.subheader(f"Autres films recommandés:")
-    for i, index in enumerate(neighbors_indices, start=1):
-        movie_title = df_KNN.loc[index, 'primaryTitle']
-        st.write(f"{i}. {movie_title}")
-        # Requête API pour obtenir les détails du film recommandé
-        movie_details = get_movie_details(df_KNN.loc[index, 'tconst'])
-        display_movie_details(movie_details)
 
 # Fonction pour afficher les détails du film à partir de l'API TMDb
 def display_movie_details(movie_details):
@@ -65,7 +42,25 @@ def display_movie_details(movie_details):
     else:
         st.info("Film non trouvé ou erreur lors de la récupération des détails.")
 
+
+# Fonction pour afficher le choix de l'utilisateur
+def display_user_choice(user_film):
+    st.subheader("Votre choix:")
+    user_movie_details = get_movie_details(user_film['tconst'].values[0])
+    display_movie_details(user_movie_details)
+
+# Fonction pour afficher les recommandations
+def display_recommendations(neighbors_indices, df_KNN):
+    st.subheader("Autres films recommandés:")
+    for index in neighbors_indices:
+        movie_title = df_KNN.loc[index, 'primaryTitle']
+        st.write(f"- {movie_title}")
+        # Affichage réduit de l'image
+        st.image(f"https://image.tmdb.org/t/p/w200/{df_KNN.loc[index, 'poster_path']}", use_column_width=False)
+
+# Fonction principale
 def main():
+    st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
     st.title("App de Recommandation de films")
 
     # Charger le DataFrame depuis l'URL
@@ -73,15 +68,6 @@ def main():
 
     # Barre de recherche pour la recommandation
     user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryTitle'].iloc[0])
-
-    # Vérifier si la recherche dans 'primaryTitle' ne donne pas de résultats
-    if user_input_film not in df_KNN['primaryTitle'].values:
-        # Si la recherche ne donne pas de résultats, essayer dans 'primaryName'
-        user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryName'].iloc[0])
-
-        # Vérifier à nouveau si la recherche dans 'primaryName' ne donne pas de résultats
-        if user_input_film not in df_KNN['primaryName'].values:
-            st.warning("Aucun résultat trouvé pour la recherche spécifiée.")
 
     if user_input_film:
         user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
@@ -99,19 +85,18 @@ def main():
         user_language = user_film_features['original_language'].values[0]
         filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
 
-        # Résultats recommandations
-        display_recommandations(user_film_features, filtered_neighbors_indices, df_KNN)
+        # Affichage du choix de l'utilisateur et des recommandations
+        display_user_choice(user_film_features)
+        display_recommendations(filtered_neighbors_indices, df_KNN)
 
     else:
-        # Si le film n'a pas été trouvé
-        st.write(f"\nLe film '{user_input_film}' n'a pas été trouvé dans la base de données.")
+        st.warning("Aucun résultat trouvé pour la recherche spécifiée.")
 
         # 4 films choisis aléatoirement comme recommandations
         random_recos_indices = random.sample(range(len(df_KNN['primaryTitle'])), 4)
-        display_recommandations(random_recos_indices, df_KNN)
+        display_recommendations(random_recos_indices, df_KNN)
 
-    # SOUS-TITRE
     st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
 if __name__ == "__main__":
-      main()
+    main()
