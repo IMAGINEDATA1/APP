@@ -57,7 +57,7 @@ def get_movie_details(movie_id):
 # Fonction pour afficher les détails du film à partir de l'API TMDb
 def display_movie_details(movie_details):
     if movie_details:
-        st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_details.get('title'), width=50, use_column_width=False)
+        st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_details.get('title'), width=150, use_column_width=False)
         st.markdown(f"**Titre:** {movie_details.get('title')}")
         st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
         st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
