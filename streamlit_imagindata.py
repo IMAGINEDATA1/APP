@@ -15,32 +15,29 @@ def main():
     # Barre de recherche pour la recommandation
     user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryTitle'].iloc[0])
 
-    if user_input_film:
-        user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
+    if st.button("Rechercher"):
+        if user_input_film:
+            user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
 
-        # Entraîner le modèle sur l'ensemble complet des caractéristiques
-        X_all = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
-        modelNN = NearestNeighbors(n_neighbors=5)
-        modelNN.fit(X_all)
+            # Entraîner le modèle sur l'ensemble complet des caractéristiques
+            X_all = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
+            modelNN = NearestNeighbors(n_neighbors=5)
+            modelNN.fit(X_all)
 
-        # Définition des voisins les plus proches du film saisi par l'utilisateur
-        neighbors = modelNN.kneighbors(user_film_features.values)
-        neighbors_indices = neighbors[1][0]
+            # Définition des voisins les plus proches du film saisi par l'utilisateur
+            neighbors = modelNN.kneighbors(user_film_features.values)
+            neighbors_indices = neighbors[1][0]
 
-        # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
-        user_language = user_film_features['original_language'].values[0]
-        filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
+            # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
+            user_language = user_film_features['original_language'].values[0]
+            filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
 
-        # Affichage du choix de l'utilisateur et des recommandations
-        display_user_choice(user_input_film)
-        display_recommandations(filtered_neighbors_indices, df_KNN)
+            # Affichage du choix de l'utilisateur et des recommandations
+            display_user_choice(user_input_film, df_KNN)
+            display_recommandations(filtered_neighbors_indices, df_KNN)
 
-    else:
-        st.warning("Aucun résultat trouvé pour la recherche spécifiée.")
-
-        # 4 films choisis aléatoirement comme recommandations
-        random_recos_indices = random.sample(range(len(df_KNN['primaryTitle'])), 4)
-        display_recommandations(random_recos_indices, df_KNN)
+        else:
+            st.warning("Veuillez saisir un film.")
 
     st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
@@ -83,9 +80,9 @@ def display_movie_details(movie_details):
         st.info("Film non trouvé ou erreur lors de la récupération des détails.")
 
 # Fonction pour afficher le choix de l'utilisateur
-def display_user_choice(user_input_film):
-    user_movie_details = get_movie_details(user_input_film)
+def display_user_choice(user_input_film, df_KNN):
     st.subheader("Votre choix:")
+    user_movie_details = get_movie_details(df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, 'tconst'].values[0])
     display_movie_details(user_movie_details)
 
 # Fonction pour afficher les recommandations
