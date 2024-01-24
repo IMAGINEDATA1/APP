@@ -76,12 +76,12 @@ def display_recommandations(random_recos_indices, df_KNN):
     for col, index in zip(cols, random_recos_indices):
         movie_title = df_KNN.loc[index, 'primaryTitle']
         movie_details = get_movie_details(df_KNN.loc[index, 'tconst'])
-        col.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_title, width=150, use_column_width=False)
+        col.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
         col.button(movie_title, key=f"button_{index}", on_click=display_movie_popup, args=(movie_details,))
 
 # Fonction pour afficher les détails du film dans une fenêtre pop-up
 def display_movie_popup(movie_details):
-    st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_details.get('title'), width=150, use_column_width=False)
+    st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
     st.markdown(f"**Titre:** {movie_details.get('title')}")
     st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
     st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
@@ -102,7 +102,7 @@ def display_movie_popup(movie_details):
 # Fonction pour afficher les détails du film à partir de l'API TMDb
 def display_movie_details(movie_details):
     if movie_details:
-        st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_details.get('title'), width=150, use_column_width=False)
+        st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
         st.markdown(f"**Titre:** {movie_details.get('title')}")
         st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
         st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
