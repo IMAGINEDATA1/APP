@@ -44,13 +44,13 @@ def display_movie_details(movie_details):
 
 
 # Fonction pour afficher le choix de l'utilisateur
-def display_user_choice(user_film):
-    st.subheader("Votre choix:")
-    user_movie_details = get_movie_details(user_film['tconst'].values[0])
+def display_user_choice(user_input_film):
+    st.subheader("Recherchez par titre, acteur ou réalisateur")
+    user_movie_details = get_movie_details(user_input_film)
     display_movie_details(user_movie_details)
 
 # Fonction pour afficher les recommandations
-def display_recommendations(neighbors_indices, df_KNN):
+def display_recommandations(neighbors_indices, df_KNN):
     st.subheader("Autres films recommandés:")
     for index in neighbors_indices:
         movie_title = df_KNN.loc[index, 'primaryTitle']
@@ -86,15 +86,15 @@ def main():
         filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
 
         # Affichage du choix de l'utilisateur et des recommandations
-        display_user_choice(user_film_features)
-        display_recommendations(filtered_neighbors_indices, df_KNN)
+        display_user_choice(user_input_film)
+        display_recommandations(filtered_neighbors_indices, df_KNN)
 
     else:
         st.warning("Aucun résultat trouvé pour la recherche spécifiée.")
 
         # 4 films choisis aléatoirement comme recommandations
         random_recos_indices = random.sample(range(len(df_KNN['primaryTitle'])), 4)
-        display_recommendations(random_recos_indices, df_KNN)
+        display_recommandations(random_recos_indices, df_KNN)
 
     st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
