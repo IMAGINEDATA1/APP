@@ -35,8 +35,10 @@ def main():
             # Exclusion du film saisi par l'utilisateur de la liste des recommandations
             filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
 
-            # Affichage du choix de l'utilisateur et des recommandations
+            # Affichage du choix de l'utilisateur
             display_user_choice(user_input_film, df_KNN)
+
+            # Affichage des recommandations avec boutons
             display_recommandations(filtered_neighbors_indices, df_KNN)
 
         else:
@@ -57,51 +59,45 @@ def get_movie_details(movie_id):
     else:
         return None
 
-# Fonction pour afficher les détails du film à partir de l'API TMDb
-def display_movie_details(movie_details):
-    if movie_details:
-        st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_details.get('title'), width=150, use_column_width=False)
-        st.markdown(f"**Titre:** {movie_details.get('title')}")
-        st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
-        st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
-        st.write(f"**Note IMDb:** {movie_details.get('vote_average')}")
-        st.write(f"**Nombre de votes:** {movie_details.get('vote_count')}")
-        st.write(f"**Durée:** {movie_details.get('runtime')} minutes")
-        st.write(f"**Genre:** {', '.join([genre['name'] for genre in movie_details.get('genres', [])])}")
-
-        st.write("**Acteurs:**")
-        cast_members = movie_details.get('credits', {}).get('cast', [])[:3]
-        for cast_member in cast_members:
-            st.write(f"- {cast_member.get('name')}")
-
-        st.write("**Réalisateurs:**")
-        crew_members = movie_details.get('credits', {}).get('crew', [])
-        directors = [crew_member.get('name') for crew_member in crew_members if crew_member.get('job') == 'Director']
-        for director in directors:
-            st.write(f"- {director}")
-    else:
-        st.info("Film non trouvé ou erreur lors de la récupération des détails.")
-
 # Fonction pour afficher le choix de l'utilisateur
 def display_user_choice(user_input_film, df_KNN):
     st.subheader("Votre choix:")
     user_movie_details = get_movie_details(df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, 'tconst'].values[0])
     display_movie_details(user_movie_details)
 
-# Fonction pour afficher les recommandations
+# Fonction pour afficher les recommandations avec boutons
 def display_recommandations(random_recos_indices, df_KNN):
     st.subheader("Autres films recommandés:")
 
-    # Utiliser des colonnes pour afficher les recommandations
-    col1, col2, col3, col4, col5 = st.columns(5)
-
+    # Utiliser des colonnes pour afficher les recommandations en ligne
+    cols = st.beta_columns(len(random_recos_indices))
 
     # Afficher les informations sur chaque recommandation
-    for col, index in zip([col1, col2, col3, col4, col5], random_recos_indices):
+    for col, index in zip(cols, random_recos_indices):
         movie_title = df_KNN.loc[index, 'primaryTitle']
-        col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_KNN.loc[index, 'tconst']).get('poster_path')}", caption=movie_title, width=150, use_column_width=False)
-        col.write(f"- {movie_title}")
-        display_movie_details(get_movie_details(df_KNN.loc[index, 'tconst']))
+        movie_details = get_movie_details(df_KNN.loc[index, 'tconst'])
+        col.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_title, width=150, use_column_width=False)
+        col.button(movie_title, key=f"button_{index}", on_click=display_movie_popup, args=(movie_details,))
+
+# Fonction pour afficher les détails du film dans une fenêtre pop-up
+def display_movie_popup(movie_details):
+    st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_details.get('title'), width=150, use_column_width=False)
+    st.markdown(f"**Titre:** {movie_details.get('title')}")
+    st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
+    st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
+    st.write(f"**Note IMDb:** {movie_details.get('vote_average')}")
+    st.write(f"**Nombre de votes:** {movie_details.get('vote_count')}")
+    st.write(f"**Durée:** {movie_details.get('runtime')} minutes")
+    st.write(f"**Genre:** {', '.join([genre['name'] for genre in movie_details.get('genres', [])])}")
+    st.write("**Acteurs:**")
+    cast_members = movie_details.get('credits', {}).get('cast', [])[:3]
+    for cast_member in cast_members:
+        st.write(f"- {cast_member.get('name')}")
+    st.write("**Réalisateurs:**")
+    crew_members = movie_details.get('credits', {}).get('crew', [])
+    directors = [crew_member.get('name') for crew_member in crew_members if crew_member.get('job') == 'Director']
+    for director in directors:
+        st.write(f"- {director}")
 
 if __name__ == "__main__":
     main()
