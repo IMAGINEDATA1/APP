@@ -63,7 +63,6 @@ def get_movie_details(movie_id):
 def display_user_choice(user_input_film, df_KNN):
     st.subheader("Votre choix:")
     user_movie_details = get_movie_details(df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, 'tconst'].iloc[0])
-    print(user_movie_details) 
     display_movie_details(user_movie_details)
 
 # Fonction pour afficher les recommandations avec boutons
@@ -99,6 +98,32 @@ def display_movie_popup(movie_details):
     directors = [crew_member.get('name') for crew_member in crew_members if crew_member.get('job') == 'Director']
     for director in directors:
         st.write(f"- {director}")
+
+# Fonction pour afficher les détails du film à partir de l'API TMDb
+def display_movie_details(movie_details):
+    if movie_details:
+        st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", caption=movie_details.get('title'), width=150, use_column_width=False)
+        st.markdown(f"**Titre:** {movie_details.get('title')}")
+        st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
+        st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
+        st.write(f"**Note IMDb:** {movie_details.get('vote_average')}")
+        st.write(f"**Nombre de votes:** {movie_details.get('vote_count')}")
+        st.write(f"**Durée:** {movie_details.get('runtime')} minutes")
+        st.write(f"**Genre:** {', '.join([genre['name'] for genre in movie_details.get('genres', [])])}")
+
+        st.write("**Acteurs:**")
+        cast_members = movie_details.get('credits', {}).get('cast', [])[:3]
+        for cast_member in cast_members:
+            st.write(f"- {cast_member.get('name')}")
+
+        st.write("**Réalisateurs:**")
+        crew_members = movie_details.get('credits', {}).get('crew', [])
+        directors = [crew_member.get('name') for crew_member in crew_members if crew_member.get('job') == 'Director']
+        for director in directors:
+            st.write(f"- {director}")
+    else:
+        st.info("Film non trouvé ou erreur lors de la récupération des détails.")
+
 
 if __name__ == "__main__":
     main()
