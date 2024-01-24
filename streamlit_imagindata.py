@@ -70,7 +70,7 @@ def display_recommandations(random_recos_indices, df_KNN):
     st.subheader("Autres films recommandés:")
 
     # Utiliser des colonnes pour afficher les recommandations en ligne
-    cols = st.beta_columns(len(random_recos_indices))
+    cols = st.columns(len(random_recos_indices))
 
     # Afficher les informations sur chaque recommandation
     for col, index in zip(cols, random_recos_indices):
