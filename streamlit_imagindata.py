@@ -63,6 +63,7 @@ def get_movie_details(movie_id):
 def display_user_choice(user_input_film, df_KNN):
     st.subheader("Votre choix:")
     user_movie_details = get_movie_details(df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, 'tconst'].iloc[0])
+    print(user_movie_details) 
     display_movie_details(user_movie_details)
 
 # Fonction pour afficher les recommandations avec boutons
