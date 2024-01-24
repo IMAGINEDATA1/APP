@@ -4,11 +4,8 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 import random
 
-
-# Fonction principale
-def main():
-    st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
-    st.title("App de Recommandation de films")
+st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
+st.title("App de Recommandation de films")
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
@@ -100,6 +97,3 @@ def display_recommandations(random_recos_indices, df_KNN):
         display_recommandations(random_recos_indices, df_KNN)
 
     st.subheader("Bonne séance ! 🍿🍿🍿 ")
-
-if __name__ == "__main__":
-    main()
