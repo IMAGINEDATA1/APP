@@ -4,47 +4,10 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 import random
 
-
 # Fonction principale
 def main():
     st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
     st.title("App de Recommandation de films")
-    # Define HTML and CSS for the tooltip
-    html_content = """
-    <style>
-    .tooltip {
-      position: relative;
-      display: inline-block;
-      cursor: pointer;
-    }
-    .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 120px;
-      background-color: black;
-      color: white;
-      text-align: center;
-      border-radius: 6px;
-      padding: 5px 0;
-      position: absolute;
-      z-index: 1;
-      top: 100%;
-      left: 50%;
-      margin-left: -60px;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .tooltip:hover .tooltiptext {
-      visibility: visible;
-      opacity: 1;
-    }
-    </style>
-    <div class="tooltip">
-      <img src="https://cdn.vox-cdn.com/thumbor/WR9hE8wvdM4hfHysXitls9_bCZI=/0x0:1192x795/1400x1400/filters:focal(596x398:597x399)/cdn.vox-cdn.com/uploads/chorus_asset/file/22312759/rickroll_4k.jpg" alt="Image" style="width:200px;height:auto;">
-      <span class="tooltiptext">Tooltip text</span>
-    </div>
-    """
-    # Display HTML in Streamlit
-    st.markdown(html_content, unsafe_allow_html=True)
 
     # Charger le DataFrame depuis l'URL
     df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
@@ -118,7 +81,7 @@ def display_recommandations(random_recos_indices, df_KNN):
 
 # Fonction pour afficher les détails du film dans une fenêtre pop-up
 def display_movie_popup(movie_details):
-    st.image(f'https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}', width=150, use_column_width=False, tooltip='my help text')
+    st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
     st.markdown(f"**Titre:** {movie_details.get('title')}")
     st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
     st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
@@ -139,7 +102,7 @@ def display_movie_popup(movie_details):
 # Fonction pour afficher les détails du film à partir de l'API TMDb
 def display_movie_details(movie_details):
     if movie_details:
-        st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False, tooltip='my help text')
+        st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
         st.markdown(f"**Titre:** {movie_details.get('title')}")
         st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
         st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
