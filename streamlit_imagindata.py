@@ -34,7 +34,7 @@ def main():
 
             # Exclusion du film saisi par l'utilisateur de la liste des recommandations
             filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
-            
+
             # Affichage du choix de l'utilisateur et des recommandations
             display_user_choice(user_input_film, df_KNN)
             display_recommandations(filtered_neighbors_indices, df_KNN)
@@ -91,9 +91,15 @@ def display_user_choice(user_input_film, df_KNN):
 # Fonction pour afficher les recommandations
 def display_recommandations(random_recos_indices, df_KNN):
     st.subheader("Autres films recommandés:")
-    for index in random_recos_indices:
+
+    # Utiliser des colonnes pour afficher les recommandations
+    col1, col2, col3, col4, col5 = st.beta_columns(5)
+
+    # Afficher les informations sur chaque recommandation
+    for col, index in zip([col1, col2, col3, col4, col5], random_recos_indices):
         movie_title = df_KNN.loc[index, 'primaryTitle']
-        st.write(f"- {movie_title}")
+        col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_KNN.loc[index, 'tconst']).get('poster_path')}", caption=movie_title, width=150, use_column_width=False)
+        col.write(f"- {movie_title}")
         display_movie_details(get_movie_details(df_KNN.loc[index, 'tconst']))
 
 if __name__ == "__main__":
