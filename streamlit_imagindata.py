@@ -24,28 +24,25 @@ def main():
             # Entraîner le modèle sur l'ensemble complet des caractéristiques
             X_filtered = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
 
-            if not X_filtered.any():
-                st.warning("Aucun résultat trouvé pour le film spécifié.")
-            else:
-                modelNN = NearestNeighbors(n_neighbors=5)
-                modelNN.fit(X_filtered)
+            modelNN = NearestNeighbors(n_neighbors=5)
+            modelNN.fit(X_filtered)
 
-                # Définition des voisins les plus proches du film saisi par l'utilisateur
-                neighbors = modelNN.kneighbors(user_film_features.values)
-                neighbors_indices = neighbors[1][0]
+            # Définition des voisins les plus proches du film saisi par l'utilisateur
+            neighbors = modelNN.kneighbors(user_film_features.values)
+            neighbors_indices = neighbors[1][0]
 
-                # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
-                user_language = user_film_features['original_language'].values[0]
-                filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
+            # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
+            user_language = user_film_features['original_language'].values[0]
+            filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
 
-                # Exclusion du film saisi par l'utilisateur de la liste des recommandations
-                filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
+            # Exclusion du film saisi par l'utilisateur de la liste des recommandations
+            filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
 
-                # Affichage du choix de l'utilisateur
-                display_user_choice(user_input_film, df_KNN)
+            # Affichage du choix de l'utilisateur
+            display_user_choice(user_input_film, df_KNN)
 
-                # Affichage des recommandations avec boutons
-                display_recommandations(filtered_neighbors_indices, df_KNN)
+            # Affichage des recommandations avec boutons
+            display_recommandations(filtered_neighbors_indices, df_KNN)
 
         else:
             st.warning("Veuillez saisir un film.")
