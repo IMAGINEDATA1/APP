@@ -1,5 +1,3 @@
-#VERSION SANS LISTE DEROULANTE VF
-
 import streamlit as st
 import requests
 import pandas as pd
@@ -37,6 +35,8 @@ def main():
             # Exclusion du film saisi par l'utilisateur de la liste des recommandations
             filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
 
+            filtered_neighbors_indices = filtered_neighbors_indices.(tolist(), 4)
+            
             # Affichage du choix de l'utilisateur
             display_user_choice(user_input_film, df_KNN)
 
@@ -45,9 +45,13 @@ def main():
 
         else:
             st.warning("Veuillez saisir un film.")
+            
+           # 4 films choisis aléatoirement comme recommandations
+            random_recos = random.sample(df_KNN['primaryTitle'].tolist(), 4)
 
-
-
+    else:
+        st.warning("Veuillez saisir une valeur.")
+  
     st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
