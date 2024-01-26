@@ -47,8 +47,6 @@ def main():
             st.warning("Veuillez saisir un film.")
 
 
-                # 4 films choisis aléatoirement comme recommandations
-    random_recos_indices = random.sample(df_KNN['primaryTitle'].tolist(), 4)
 
     st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
@@ -72,14 +70,14 @@ def display_user_choice(user_input_film, df_KNN):
     display_movie_details(user_movie_details)
 
 # Fonction pour afficher les recommandations avec boutons
-def display_recommandations(random_recos_indices, df_KNN):
+def display_recommandations(filtered_neighbors_indices, df_KNN):
     st.subheader("Autres films recommandés:")
 
     # Utiliser des colonnes pour afficher les recommandations en ligne
-    cols = st.columns(len(random_recos_indices))
+    cols = st.columns(len(filtered_neighbors_indices))
 
     # Afficher les informations sur chaque recommandation
-    for col, index in zip(cols, random_recos_indices):
+    for col, index in zip(cols, filtered_neighbors_indices):
         movie_title = df_KNN.loc[index, 'primaryTitle']
         movie_details = get_movie_details(df_KNN.loc[index, 'tconst'])
         col.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
