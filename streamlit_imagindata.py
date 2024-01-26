@@ -1,3 +1,5 @@
+#VERSION SANS LISTE DEROULANTE VF
+
 import streamlit as st
 import requests
 import pandas as pd
@@ -20,37 +22,40 @@ def main():
             user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
 
             # Entraîner le modèle sur l'ensemble complet des caractéristiques
-            X_all = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
-            modelNN = NearestNeighbors(n_neighbors=5)
-            modelNN.fit(X_all)
+            X_filtered = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
 
-            # Définition des voisins les plus proches du film saisi par l'utilisateur
-            neighbors = modelNN.kneighbors(user_film_features.values)
-            neighbors_indices = neighbors[1][0]
+            if not X_filtered.any():
+                st.warning("Aucun résultat trouvé pour le film spécifié.")
+            else:
+                modelNN = NearestNeighbors(n_neighbors=5)
+                modelNN.fit(X_filtered)
 
-            # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
-            user_language = user_film_features['original_language'].values[0]
-            filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
+                # Définition des voisins les plus proches du film saisi par l'utilisateur
+                neighbors = modelNN.kneighbors(user_film_features.values)
+                neighbors_indices = neighbors[1][0]
 
-            # Exclusion du film saisi par l'utilisateur de la liste des recommandations
-            filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
+                # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
+                user_language = user_film_features['original_language'].values[0]
+                filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
 
-            
-            # Affichage du choix de l'utilisateur
-            display_user_choice(user_input_film, df_KNN)
+                # Exclusion du film saisi par l'utilisateur de la liste des recommandations
+                filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
 
-            # Affichage des recommandations avec boutons
-            display_recommandations(filtered_neighbors_indices, df_KNN)
+                # Affichage du choix de l'utilisateur
+                display_user_choice(user_input_film, df_KNN)
+
+                # Affichage des recommandations avec boutons
+                display_recommandations(filtered_neighbors_indices, df_KNN)
 
         else:
             st.warning("Veuillez saisir un film.")
-            
-           # 4 films choisis aléatoirement comme recommandations
+
+            # 4 films choisis aléatoirement comme recommandations
             random_recos = random.sample(df_KNN['primaryTitle'].tolist(), 4)
 
     else:
         st.warning("Veuillez saisir une valeur.")
-  
+
     st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
