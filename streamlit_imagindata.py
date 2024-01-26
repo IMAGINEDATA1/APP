@@ -15,26 +15,26 @@ def main():
 
     # Barre de recherche pour la recommandation
     search_option = st.selectbox("Choisir une option de recherche", ["Titre", "Acteur", "Réalisateur", "Genre", "Année", "Société de production"])
-    user_input_film = ""
+    user_input_film = []
 
-    if search_option == "Acteur" or search_option == "Réalisateur":
-        user_input_film = st.text_input(f"Recherchez par {search_option}", df_KNN['primaryName'].iloc[0])
+    if search_option == "Titre":
+        user_input_film = st.text_input("Choisir un titre", df_KNN['primaryTitle'].iloc[0])
 
-    elif search_option == "Titre":
-        titre = df_KNN['primaryTitle'].unique()
-        user_input_film = st.selectbox("Choisir un titre", titre)
+    elif search_option == "Acteur":
+        user_input_film = st.text_input("Choisir un acteur", df_KNN['primaryName'].iloc[0])
+
+    elif search_option == "Réalisateur":
+        user_input_film = st.text_input("Choisir un réalisateur", df_KNN['primaryName'].iloc[0])
 
     elif search_option == "Genre":
-        genres = df_KNN['genre1'].unique()
-        user_input_film = st.selectbox("Choisir un genre", genres)
+        user_input_film = st.text_input("Choisir un genre", df_KNN['genre1'].iloc[0])
 
     elif search_option == "Année":
-        years = df_KNN['startYear'].unique()
-        user_input_film = st.selectbox("Choisir une année", years)
+        user_input_film = st.text_input("Choisir une année", df_KNN['starYear'].iloc[0])
 
     #elif search_option == "Société de production":
         #prod_names = df_KNN['prod_name'].unique()
-        #user_input = st.selectbox("Choisir une société de production", prod_names)
+        #user_input = st.text_input("Choisir une société de production", , df_KNN['primaryTitle'].iloc[0])
 
     if st.button("Rechercher"):
         if user_input_film:
@@ -73,7 +73,6 @@ def main():
         else:
             st.warning("Veuillez saisir une valeur.")
 
-    st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
 # Fonction pour filtrer le DataFrame en fonction de l'option de recherche
 def filter_dataframe(df, search_option, user_input):
@@ -84,7 +83,7 @@ def filter_dataframe(df, search_option, user_input):
         return df_KNN[df_KNN['primaryTitle'] == user_input_film]
 
     elif search_option == "Genre":
-        return df_KNN[df_KNN['genre'] == user_input_film]
+        return df_KNN[df_KNN['genre1'] == user_input_film]
 
     elif search_option == "Année":
         return df_KNN[df_KNN['startYear'] == user_input_film]
