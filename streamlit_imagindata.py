@@ -14,11 +14,15 @@ def main():
     df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
 
     # Barre de recherche pour la recommandation
-    search_option = st.selectbox("Choisir une option de recherche", ["Acteur", "Réalisateur", "Genre", "Année", "Société de production"])
+    search_option = st.selectbox("Choisir une option de recherche", ["Titre", "Acteur", "Réalisateur", "Genre", "Année", "Société de production"])
     user_input_film = ""
 
     if search_option == "Acteur" or search_option == "Réalisateur":
         user_input_film = st.text_input(f"Recherchez par {search_option}", df_KNN['primaryName'].iloc[0])
+
+    elif search_option == "Titre":
+        titre = df_KNN['primaryTitle'].unique()
+        user_input_film = st.selectbox("Choisir un titre", titre)
 
     elif search_option == "Genre":
         genres = df_KNN['genre1'].unique()
@@ -69,22 +73,26 @@ def main():
         else:
             st.warning("Veuillez saisir une valeur.")
 
+    st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
 # Fonction pour filtrer le DataFrame en fonction de l'option de recherche
 def filter_dataframe(df, search_option, user_input):
     if search_option == "Acteur" or search_option == "Réalisateur":
-        return df[df['primaryName'] == user_input_film]
+        return df_KNN[df_KNN['primaryName'] == user_input_film]
+
+    elif search_option == "Tire":
+        return df_KNN[df_KNN['primaryTitle'] == user_input_film]
 
     elif search_option == "Genre":
-        return df[df['genre'] == user_input_film]
+        return df_KNN[df_KNN['genre'] == user_input_film]
 
     elif search_option == "Année":
-        return df[df['startYear'] == user_input_film]
+        return df_KNN[df_KNN['startYear'] == user_input_film]
 
     #elif search_option == "Société de production":
         #return df[df['prod_name'] == user_input_film]
 
-    return df
+    return df_KNN
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
@@ -168,3 +176,4 @@ if __name__ == "__main__":
     main()
 
 st.subheader("Bonne séance ! 🍿🍿🍿 ")
+
