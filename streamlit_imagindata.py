@@ -35,7 +35,6 @@ def main():
             # Exclusion du film saisi par l'utilisateur de la liste des recommandations
             filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
 
-            filtered_neighbors_indices = [filtered_neighbors_indices[i:i+4] for i in range(0, len(filtered_neighbors_indices), 4)]
             
             # Affichage du choix de l'utilisateur
             display_user_choice(user_input_film, df_KNN)
