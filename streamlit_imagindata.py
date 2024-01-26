@@ -1,4 +1,4 @@
-#VERSION AVEC LISTE DEROULANTE
+#VERSION SANS LISTE DEROULANTE 
 
 import streamlit as st
 import requests
@@ -6,6 +6,7 @@ import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 import random
 
+# Fonction principale
 def main():
     st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
     st.title("App de Recommandation de films")
@@ -14,84 +15,42 @@ def main():
     df_KNN = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_KNN")
 
     # Barre de recherche pour la recommandation
-    search_option = st.selectbox("Choisir une option de recherche", ["Titre", "Acteur", "Réalisateur", "Genre", "Année", "Société de production"])
-    user_input_film = []
-
-    if search_option == "Titre":
-        user_input_film = st.text_input("Choisir un titre", df_KNN['primaryTitle'].iloc[0])
-
-    elif search_option == "Acteur":
-        user_input_film = st.text_input("Choisir un acteur", df_KNN['primaryName'].iloc[0])
-
-    elif search_option == "Réalisateur":
-        user_input_film = st.text_input("Choisir un réalisateur", df_KNN['primaryName'].iloc[0])
-
-    elif search_option == "Genre":
-        user_input_film = st.text_input("Choisir un genre", df_KNN['genre1'].iloc[0])
-
-    elif search_option == "Année":
-        user_input_film = st.text_input("Choisir une année", df_KNN['starYear'].iloc[0])
-
-    #elif search_option == "Société de production":
-        #prod_names = df_KNN['prod_name'].unique()
-        #user_input = st.text_input("Choisir une société de production", , df_KNN['primaryTitle'].iloc[0])
+    user_input_film = st.text_input("Recherchez par titre, acteur ou réalisateur", df_KNN['primaryTitle'].iloc[0])
 
     if st.button("Rechercher"):
         if user_input_film:
+            user_film_features = df_KNN.loc[df_KNN['primaryTitle'] == user_input_film, ['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
 
-            # Utiliser user_input et search_option pour filtrer le DataFrame
-            filtered_df = filter_dataframe(df_KNN, search_option, user_input_film)
+            # Entraîner le modèle sur l'ensemble complet des caractéristiques
+            X_all = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
+            modelNN = NearestNeighbors(n_neighbors=5)
+            modelNN.fit(X_all)
 
-            if not filtered_df.empty:
-                user_film_features = filtered_df[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']]
+            # Définition des voisins les plus proches du film saisi par l'utilisateur
+            neighbors = modelNN.kneighbors(user_film_features.values)
+            neighbors_indices = neighbors[1][0]
 
-                # Entraîner le modèle sur l'ensemble complet des caractéristiques
-                X_all = df_KNN[['startYear', 'original_language', 'Action', 'Adventure', 'Biography', 'Crime', 'Mystery']].values
-                modelNN = NearestNeighbors(n_neighbors=5)
-                modelNN.fit(X_all)
+            # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
+            user_language = user_film_features['original_language'].values[0]
+            filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
 
-                # Définition des voisins les plus proches du film saisi par l'utilisateur
-                neighbors = modelNN.kneighbors(user_film_features.values)
-                neighbors_indices = neighbors[1][0]
+            # Exclusion du film saisi par l'utilisateur de la liste des recommandations
+            filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
 
-                # Filtrer les voisins pour ne prendre que ceux avec le même 'original_language'
-                user_language = user_film_features['original_language'].values[0]
-                filtered_neighbors_indices = [index for index in neighbors_indices if df_KNN.loc[index, 'original_language'] == user_language]
+            # Affichage du choix de l'utilisateur
+            display_user_choice(user_input_film, df_KNN)
 
-                # Exclusion du film saisi par l'utilisateur de la liste des recommandations
-                filtered_neighbors_indices = [index for index in filtered_neighbors_indices if index != df_KNN[df_KNN['primaryTitle'] == user_input_film].index[0]]
-
-                # Affichage du choix de l'utilisateur
-                display_user_choice(user_input_film, df_KNN)
-
-                # Affichage des recommandations avec boutons
-                display_recommandations(filtered_neighbors_indices, df_KNN)
-
-            else:
-                st.warning("Aucun résultat trouvé.")
+            # Affichage des recommandations avec boutons
+            display_recommandations(filtered_neighbors_indices, df_KNN)
 
         else:
-            st.warning("Veuillez saisir une valeur.")
+            st.warning("Veuillez saisir un film.")
 
 
-# Fonction pour filtrer le DataFrame en fonction de l'option de recherche
-def filter_dataframe(df, search_option, user_input):
-    if search_option == "Acteur" or search_option == "Réalisateur":
-        return df_KNN[df_KNN['primaryName'] == user_input_film]
+                # 4 films choisis aléatoirement comme recommandations
+    random_recos_indices = random.sample(df_KNN['primaryTitle'].tolist(), 4)
 
-    elif search_option == "Tire":
-        return df_KNN[df_KNN['primaryTitle'] == user_input_film]
-
-    elif search_option == "Genre":
-        return df_KNN[df_KNN['genre1'] == user_input_film]
-
-    elif search_option == "Année":
-        return df_KNN[df_KNN['startYear'] == user_input_film]
-
-    #elif search_option == "Société de production":
-        #return df[df['prod_name'] == user_input_film]
-
-    return df_KNN
+    st.subheader("Bonne séance ! 🍿🍿🍿 ")
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
@@ -171,8 +130,6 @@ def display_movie_details(movie_details):
     else:
         st.info("Film non trouvé ou erreur lors de la récupération des détails.")
 
+
 if __name__ == "__main__":
     main()
-
-st.subheader("Bonne séance ! 🍿🍿🍿 ")
-
