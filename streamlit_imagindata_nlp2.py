@@ -64,7 +64,7 @@ def diplay_user_choice(keyword, similarity, df_NLP):
     st.subheader("Votre choix :")
     if not user_input_film.empty:
         # Obtenir l'index du film correspondant
-        movie_index = user_input_film.index[0]
+        movie_index = user_input_film.index[0] - df_NLP.index[0]
         # Calculer la similarité cosinus pour les films correspondants
         distances = np.mean(similarity[movie_index, :], axis=0)
         # Trier + obtenir les indices des films reco
@@ -75,6 +75,7 @@ def diplay_user_choice(keyword, similarity, df_NLP):
         return movies_list
     else:
         return []
+
 
 
 # Fonction pour l'affichage des recommandations
