@@ -67,8 +67,11 @@ def get_similar_movies(user_input_film, similarity, df_NLP):
         movie_indices = user_input_film.index
         st.write(f"Indices des films : {movie_indices}")
         
+        # Sélectionner les vecteurs de similarité correspondants aux films choisis
+        selected_similarity = similarity.iloc[movie_indices]
+        
         # Calculer la similarité cosinus pour tous les films
-        distances = cosine_similarity(similarity.values, similarity.iloc[movie_indices].values.reshape(1, -1))
+        distances = cosine_similarity(selected_similarity, similarity)
         st.write(f"Distances : {distances}")
         
         # Tri + obtenir indices des films reco
@@ -81,7 +84,6 @@ def get_similar_movies(user_input_film, similarity, df_NLP):
         return movies_list
     else:
         return []
-        
 
 # Fonction pour Affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
