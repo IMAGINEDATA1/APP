@@ -72,19 +72,38 @@ def main():
             df_NLP['tags_NLP'] = df_NLP['tags_NLP'].apply(stem)
 
             similarity = cosine_similarity(vectors)
-            movies_list = sorted(list(enumerate(similarity[0])), reverse=True, key=lambda x: x[1])[1:6]
+
+            # Appeler la fonction pour obtenir les films similaires
+            similar_movies = get_similar_movies(user_input_film, similarity, df_NLP)
 
             # Affichage des recommandations avec boutons
-            display_recommandations(movies_list, df_NLP, user_input_film, search_option)
+            display_recommandations(similar_movies, df_NLP)
 
         else:
             st.warning("Aucun résultat trouvé.")
 
             # 4 films choisis aléatoirement comme recommandations
             random_recos = random.sample(df_NLP['primaryTitle'].tolist(), 4)
-            display_recommandations(random_recos, df_NLP, user_input_film, search_option)
+            display_recommandations(random_recos, df_NLP)
 
-# NLP Fonction pour filtrer le DataFrame en fonction de l'option de recherche
+# Fonction pour obtenir les films similaires en fonction du mot-clé
+def get_similar_movies(keyword, similarity_matrix, df_NLP):
+    # Recherche films avec mot-cle
+    user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
+    st.subheader("Votre choix :")
+    if not user_input_film.empty:
+        # Obtenir indices films corresp.
+        movie_indices = user_input_film.index
+        # Calcul similarite cosinus pour films corresp
+        distances = np.median(similarity_matrix[movie_indices], axis=0)
+        # Tri + obtenir indices des films reco
+        sorted_indices = np.argsort(distances)[::-1]
+        # Sélection des 5 premiers indices
+        num_recommendations = min(5, len(sorted_indices))
+        movies_list = sorted_indices[1:num_recommendations + 1]
+        return movies_list
+    else:
+        return []
 
 # Fonction pour Affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
