@@ -10,6 +10,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from nltk.stem.snowball import SnowballStemmer
 from sklearn.metrics.pairwise import cosine_similarity
 import random
+import base64
+import pickle
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -23,6 +25,7 @@ def main():
     df_directors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_directors")
     df_NLP = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_mainNLP")
     df_prod = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_prod")
+    df_matrice = pd.read_pickle("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/df_matrice.pkl")
 
     # Barre de recherche pour la recommandation
     search_option_mapping = {"Titre": "primaryTitle", "Acteur": "primaryName", "Réalisateur": "primaryName", "Genre": "genres", "Année": "startYear", "Société de production": "prod_name"}
@@ -36,47 +39,15 @@ def main():
 
     if st.button("Rechercher"):
         if user_input_film:
-            # Conversion en str des colonnes
-            columns_to_convert = ['primaryTitle', 'overview', 'tagline', 'actors', 'directors', 'prod_name', 'tags_NLP']
-            df_NLP[columns_to_convert] = df_NLP[columns_to_convert].astype(str)
 
-            # Fonction nettoyage
-            def clean(text):
-                tokens = nltk.word_tokenize(text.lower())
-                tokens_clean = []
-                additional_stopwords = ["'s", "ca", "n't"]
-                stopwordsenglish = set(stopwords.words('english') + additional_stopwords)
-
-                for word in tokens:
-                    word = word.strip(string.punctuation)
-                    if word and word not in stopwordsenglish and not re.match(r'^\W+$', word):
-                        tokens_clean.append(word)
-                cleaned_text = ' '.join(tokens_clean)
-                return cleaned_text
-
-            df_NLP['tags_NLP'] = df_NLP['tags_NLP'].apply(clean)
-
-            # Transforme un texte en vecteur sur la base du comptage de la fréquence de chaque mot.
-            cv = CountVectorizer(stop_words='english')
-            vectors = cv.fit_transform(df_NLP['tags_NLP']).toarray()
-
-            # Choix Stemming
-            ps = SnowballStemmer("english")
-
-            def stem(text):
-                y = []
-                for i in text.split():
-                    y.append(ps.stem(i))
-                return " ".join(y)
-
-            df_NLP['tags_NLP'] = df_NLP['tags_NLP'].apply(stem)
-
-            similarity = cosine_similarity(vectors)
+            similarity = pickle.load(open("df_matrice.pkl", 'rb'))
+            movie_list = df_NLP['primaryTitle'].values
 
             # Appeler la fonction pour obtenir les films similaires
             similar_movies = get_similar_movies(user_input_film, similarity, df_NLP)
 
             # Affichage des recommandations avec boutons
+            get_similar_movies(user_input_film, similarity, df_NLP)
             display_recommandations(similar_movies, df_NLP, user_input_film, search_option)
 
         else:
@@ -87,7 +58,7 @@ def main():
             display_recommandations(random_recos, df_NLP, user_input_film, search_option)
 
 # Fonction pour obtenir les films similaires en fonction du mot-clé
-def get_similar_movies(keyword, similarity_matrix, df_NLP):
+def get_similar_movies(keyword, similarity, df_NLP):
     # Recherche films avec mot-cle
     user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
     st.subheader("Votre choix :")
@@ -95,12 +66,12 @@ def get_similar_movies(keyword, similarity_matrix, df_NLP):
         # Obtenir indices films corresp.
         movie_indices = user_input_film.index
         # Calcul similarite cosinus pour films corresp
-        distances = np.median(similarity_matrix[movie_indices], axis=0)
+        distances = np.mean(similarity[movie_indices], axis=0)
         # Tri + obtenir indices des films reco
         sorted_indices = np.argsort(distances)[::-1]
         # Sélection des 5 premiers indices
         num_recommendations = min(5, len(sorted_indices))
-        movies_list = sorted_indices[1:num_recommendations + 1]
+        movies_list = [(index, distances[index]) for index in sorted_indices[1:num_recommendations + 1]]
         return movies_list
     else:
         return []
