@@ -3,27 +3,30 @@ import requests
 import pandas as pd
 import numpy as np
 import nltk
-import random
-
 from nltk.corpus import stopwords
+import re
+import string
 from sklearn.feature_extraction.text import CountVectorizer
+from nltk.stem.snowball import SnowballStemmer
 from sklearn.metrics.pairwise import cosine_similarity
+import random
+import base64
+import pickle
 
-# Téléchargement des ressources NLTK
 nltk.download('punkt')
 nltk.download('stopwords')
 
-# Charger les DataFrames depuis l'URL une seule fois au démarrage de l'application
-df_actors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_actors")
-df_directors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_directors")
-df_NLP = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_mainNLP")
-df_prod = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_prod")
-df_matrice = pd.read_pickle("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/df_matrice.pkl")
+def main():
+    st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
+    st.title("App de Recommandation de films")
 
-# Gérer les erreurs lors du chargement des données
-if any(df is None for df in [df_actors, df_directors, df_NLP, df_prod, df_matrice]):
-    st.error("Erreur lors du chargement des données. Vérifiez votre connexion Internet et réessayez.")
-else:
+    # Charger les DataFrames depuis l'URL
+    df_actors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_actors")
+    df_directors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_directors")
+    df_NLP = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_mainNLP")
+    df_prod = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_prod")
+    df_matrice = pd.read_pickle("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/df_matrice.pkl")
+
     # Barre de recherche pour la recommandation
     search_option_mapping = {
         "Titre": "primaryTitle",
@@ -33,17 +36,15 @@ else:
         "Année": "startYear",
         "Société de production": "prod_name"
     }
-
-    st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
-    st.title("App de Recommandation de films")
-
-    # Barre de recherche pour la recommandation
     search_option = st.selectbox("Choisir une option de recherche", list(search_option_mapping.keys()))
     user_input_film = None
 
     if search_option in search_option_mapping:
         column_name = search_option_mapping[search_option]
-        default_value = df_actors[column_name].iloc[0] + df_directors[column_name].iloc[0] + df_prod[column_name].iloc[0] + df_NLP[column_name].iloc[0]
+        default_value = df_NLP[search_option_mapping[search_option]].iloc[0]+ \
+                df_actors[search_option_mapping[search_option]].iloc[0] + \
+                df_directors[search_option_mapping[search_option]].iloc[0] + \
+                df_prod[search_option_mapping[search_option]].iloc[0] + \
         user_input_film = st.text_input(f"Choisir un(e) {search_option.lower()}", default_value)
 
     if st.button("Rechercher"):
@@ -58,11 +59,6 @@ else:
             # 4 films choisis aléatoirement comme recommandations
             random_recos = random.sample(df_NLP['primaryTitle'].tolist(), 4)
             display_recommandations(random_recos, df_NLP, user_input_film, search_option)
-
-# Mise en cache des résultats de recherche
-@st.cache
-def get_similar_movies(user_input_film, df_matrice, df_NLP):
-    return diplay_user_choice(user_input_film, df_matrice, df_NLP)
 
 # Fonction pour obtenir le film choisi par l'utilisateur
 def diplay_user_choice(keyword, similarity, df_NLP):
@@ -83,6 +79,7 @@ def diplay_user_choice(keyword, similarity, df_NLP):
     else:
         return []
 
+
 # Fonction pour l'affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
     st.subheader("Autres films recommandés:")
@@ -96,6 +93,7 @@ def display_recommandations(movies_list, df_NLP, user_input_film, search_option)
         col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_NLP.loc[index, 'tconst']).get('poster_path')}", width=150, use_column_width=False)
         col.write(f"**{movie_title}**")
         col.button("Voir détails", key=f"button_{index}", on_click=display_movie_popup, args=(df_NLP.loc[index, 'tconst'],))
+
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
@@ -140,5 +138,7 @@ def display_movie_details(movie_details):
     else:
         st.info("Film non trouvé ou erreur lors de la récupération des détails.")
 
-# Fin du code
+if __name__ == "__main__":
+    main()
+
 st.subheader("Bonne séance ! 🍿🍿🍿 ")
