@@ -63,9 +63,16 @@ def get_similar_movies(user_input_film, similarity, df_NLP):
     st.subheader("Votre choix :")
     
     if not user_input_film.empty:
+
+        cv = CountVectorizer()
+        cv.fit_transform(df_NLP['tags_NLP']).toarray().shape
+        vectors = cv.fit_transform(df_NLP['tags_NLP']).toarray()
+        
         # Obtenir indices films corresp.
         movie_indices = user_input_film.index
         st.write(f"Indices des films : {movie_indices}")
+
+        similarity = cosine_similarity(vectors)
         
         # Sélectionner les vecteurs de similarité correspondants aux films choisis
         selected_similarity = similarity.iloc[movie_indices]
