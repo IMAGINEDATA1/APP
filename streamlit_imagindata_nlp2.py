@@ -41,10 +41,12 @@ def main():
 
     if search_option in search_option_mapping:
         column_name = search_option_mapping[search_option]
-        default_value = df_NLP[search_option_mapping[search_option]].iloc[0]+ \
-                df_actors[search_option_mapping[search_option]].iloc[0] + \
-                df_directors[search_option_mapping[search_option]].iloc[0] + \
-                df_prod[search_option_mapping[search_option]].iloc[0] + \
+        
+        default_value = (df_actors[search_option_mapping[search_option]].iloc[0] +
+                 df_directors[search_option_mapping[search_option]].iloc[0] +
+                 df_prod[search_option_mapping[search_option]].iloc[0] +
+                 df_NLP[search_option_mapping[search_option]].iloc[0])
+
         user_input_film = st.text_input(f"Choisir un(e) {search_option.lower()}", default_value)
 
     if st.button("Rechercher"):
