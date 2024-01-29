@@ -43,7 +43,7 @@ def main():
             similarity = pickle.load(open("df_matrice.pkl", 'rb'))
             movie_list = df_NLP['primaryTitle'].values
 
-            # Appeler la fonction pour obtenir les films similaires
+            # Passer user_input_film comme paramètre à la fonction
             similar_movies = get_similar_movies(user_input_film, similarity, df_NLP)
 
             # Affichage des recommandations avec boutons
@@ -56,12 +56,7 @@ def main():
             random_recos = random.sample(df_NLP['primaryTitle'].tolist(), 4)
             display_recommandations(random_recos, df_NLP, user_input_film, search_option)
 
-            cv = CountVectorizer()
-            cv.fit_transform(df_NLP['tags_NLP']).toarray().shape
-            vectors = cv.fit_transform(df_NLP['tags_NLP']).toarray()
-            similarity = cosine_similarity(vectors)
-
-# Fonction pour obtenir les films similaires en fonction du mot-clé
+# Modifiez la fonction get_similar_movies
 def get_similar_movies(user_input_film, similarity, df_NLP):
     # Ajoutez un message de journalisation pour voir la valeur de user_input_film
     print(f"user_input_film: {user_input_film}")
@@ -76,7 +71,7 @@ def get_similar_movies(user_input_film, similarity, df_NLP):
         print(f"movie_indices: {movie_indices}")
 
         # Calculer la similarité cosinus pour tous les films correspondants
-        distances = np.mean(similarity[movie_indices], axis=0)
+        distances = np.median(similarity[movie_indices], axis=0)
         # Ajoutez un message de journalisation pour voir les distances
         print(f"distances: {distances}")
 
@@ -93,7 +88,7 @@ def get_similar_movies(user_input_film, similarity, df_NLP):
         for i in movies_list:
             print(df_NLP.iloc[i].primaryTitle)
     else:
-        print(f"Aucun film trouvé avec le mot-clé '{user_input_film}'.")  
+        print(f"Aucun film trouvé avec le mot-clé '{user_input_film}'.")
 
 # Fonction pour Affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
