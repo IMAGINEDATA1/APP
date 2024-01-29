@@ -43,9 +43,6 @@ def main():
             similarity = pickle.load(open("df_matrice.pkl", 'rb'))
             movie_list = df_NLP['primaryTitle'].values
 
-            # Appeler la fonction pour obtenir les films similaires
-            similar_movies = get_similar_movies(user_input_film, similarity, df_NLP)
-
             # Affichage des recommandations avec boutons
             display_recommandations(similar_movies, df_NLP, user_input_film, search_option)
 
@@ -78,6 +75,9 @@ def get_similar_movies(user_input_film, similarity, df_NLP):
         return movies_list
     else:
         return []
+        
+            # Appeler la fonction pour obtenir les films similaires
+            similar_movies = get_similar_movies(user_input_film, similarity, df_NLP)
 
 # Fonction pour Affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
@@ -133,8 +133,8 @@ def display_movie_details(movie_details):
         directors = [crew_member.get('name') for crew_member in crew_members if crew_member.get('job') == 'Director']
         for director in directors:
             st.write(f"- {director}")
-    else:
-        st.info("Film non trouvé ou erreur lors de la récupération des détails.")
+    #else:
+        #st.info("Film non trouvé ou erreur lors de la récupération des détails.")
 
 if __name__ == "__main__":
     main()
