@@ -59,12 +59,12 @@ def main():
 # Fonction pour obtenir les films similaires en fonction du mot-clé
 def get_similar_movies(user_input_film, similarity, df_NLP):
     # Recherche films avec mot-cle
-    user_input_films = df_NLP[df_NLP['primaryTitle'].str.contains(user_input_film, case=False, na=False)]
+    user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(user_input_film, case=False, na=False)]
     st.subheader("Votre choix :")
     
     if not user_input_films.empty:
         # Obtenir indices films corresp.
-        movie_indices = user_input_films.index
+        movie_indices = user_input_film.index
         st.write(f"Indices des films : {movie_indices}")
         # Calcul similarite cosinus pour films corresp
         distances = similarity.iloc[movie_indices, :].mean(axis=0)
