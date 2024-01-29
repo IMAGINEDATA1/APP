@@ -56,13 +56,13 @@ def main():
     st.title("App de Recommandation de Films")
 
     # Ajoutez les composants Streamlit pour la recherche et l'affichage des résultats
-    user_input = st.text_input("Rechercher des films similaires", "indiana")
+    user_input = st.text_input("Rechercher des films similaires :")
     if st.button("Rechercher"):
         # Nettoyage et stemming du texte d'entrée
         cleaned_input = stem(clean(user_input))
 
         # Mesure de la similarité avec les films existants
-        matching_movies = df_NLP[df_NLP['primaryTitle'].str.contains(cleaned_input, case=False, na=False)]
+        matching_movies = df_NLP[df_NLP["primaryTitle"].str.contains(cleaned_input, case=False, na=False)]
         if not matching_movies.empty:
             movie_indices = matching_movies.index
             distances = np.median(similarity[movie_indices], axis=0)
