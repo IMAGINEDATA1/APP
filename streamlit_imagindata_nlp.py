@@ -63,6 +63,8 @@ def main():
 
 # Fonction pour obtenir les films similaires en fonction du mot-clé
 def get_similar_movies(user_input_film, similarity, df_NLP):
+
+    print(f"user_input_film: {user_input_film}")
     # Rechercher les films dont le titre contient le mot-clé
     matching_movies = df_NLP[df_NLP['primaryTitle'].str.contains(user_input_film, case=False, na=False)]
 
