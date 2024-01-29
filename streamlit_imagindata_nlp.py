@@ -1,8 +1,7 @@
-#VERSION AVEC LISTE DEROULANTE VF
-
 import streamlit as st
 import requests
 import pandas as pd
+import numpy as np
 import nltk
 from nltk.corpus import stopwords
 import re
@@ -11,8 +10,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from nltk.stem.snowball import SnowballStemmer
 from sklearn.metrics.pairwise import cosine_similarity
 import random
-
-
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -61,7 +58,6 @@ def main():
 
             # Transforme un texte en vecteur sur la base du comptage de la fréquence de chaque mot.
             cv = CountVectorizer(stop_words='english')
-            cv.fit_transform(df_NLP['tags_NLP']).toarray().shape
             vectors = cv.fit_transform(df_NLP['tags_NLP']).toarray()
 
             # Choix Stemming
@@ -78,64 +74,31 @@ def main():
             similarity = cosine_similarity(vectors)
             movies_list = sorted(list(enumerate(similarity[0])), reverse=True, key=lambda x: x[1])[1:6]
 
-            # Affichage du choix de l'utilisateur
-            recommend_similar_movies(user_input_film, search_option, df_NLP)
-
             # Affichage des recommandations avec boutons
-            display_recommandations(movies_list, df_NLP)
+            display_recommandations(movies_list, df_NLP, user_input_film, search_option)
 
         else:
             st.warning("Aucun résultat trouvé.")
 
             # 4 films choisis aléatoirement comme recommandations
             random_recos = random.sample(df_NLP['primaryTitle'].tolist(), 4)
-            display_recommandations(random_recos, df_NLP)
+            display_recommandations(random_recos, df_NLP, user_input_film, search_option)
 
 # NLP Fonction pour filtrer le DataFrame en fonction de l'option de recherche
 
-
-
-
-
 # Fonction pour Affichage des recommandations
-# calcul recos
-def recommend_similar_movies(keyword):
-    # Recherche films avec mot-cle
-    user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
-    if not user_input_film.empty:
-        # Obtenir indices films corresp.
-        movie_indices = user_input_film.index
-        user_movie_details = get_movie_details(movie_indices['tconst'])
-        # Calcul similarite cosinus pour films corresp
-        distances = np.median(similarity[movie_indices], axis=0)
-        # Tri + obtenir indices des films reco
-        sorted_indices = np.argsort(distances)[::-1]
-        # Sélection des 5 premiers indices
-        num_recommendations = min(5, len(sorted_indices))
-        movies_list = sorted_indices[1:num_recommendations + 1]
-        user_movie_details = get_movie_details(movies_list['tconst'])
-
-        # Affichage
-        for i in user_movie_details:
-            st.write(df_NLP.iloc[i].primaryTitle)
-    else:
-        st.write(f"Aucun film trouvé avec le mot-clé '{keyword}'.")
-
-
-
-def display_recommandations(random_recos, df_NLP):
+def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
     st.subheader("Autres films recommandés:")
 
     # Utiliser des colonnes pour afficher les recommandations en ligne
-    cols = st.columns(len(random_recos))
+    cols = st.columns(len(movies_list))
 
     # Afficher les informations sur chaque recommandation
-    for col, index in zip(cols, random_recos):
+    for col, (index, similarity_score) in zip(cols, movies_list):
         movie_title = df_NLP.loc[index, 'primaryTitle']
-        movie_details = get_movie_details(df_NLP.loc[index, 'tconst'])
-        col.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
-        col.button(movie_title, key=f"button_{index}", on_click=display_movie_popup, args=(movie_details,))
-
+        col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_NLP.loc[index, 'tconst']).get('poster_path')}", width=150, use_column_width=False)
+        col.write(f"**{movie_title}** - Similarité: {similarity_score:.2%}")
+        col.button("Voir détails", key=f"button_{index}", on_click=display_movie_popup, args=(df_NLP.loc[index, 'tconst'],))
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
@@ -151,29 +114,14 @@ def get_movie_details(movie_id):
         return None
 
 # Fonction pour afficher les détails du film dans une fenêtre pop-up
-def display_movie_popup(movie_details):
+def display_movie_popup(movie_id):
+    movie_details = get_movie_details(movie_id)
     st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
-    st.markdown(f"**Titre:** {movie_details.get('title')}")
-    st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
-    st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
-    st.write(f"**Note IMDb:** {movie_details.get('vote_average')}")
-    st.write(f"**Nombre de votes:** {movie_details.get('vote_count')}")
-    st.write(f"**Durée:** {movie_details.get('runtime')} minutes")
-    st.write(f"**Genre:** {', '.join([genre['name'] for genre in movie_details.get('genres', [])])}")
-    st.write("**Acteurs:**")
-    cast_members = movie_details.get('credits', {}).get('cast', [])[:3]
-    for cast_member in cast_members:
-        st.write(f"- {cast_member.get('name')}")
-    st.write("**Réalisateurs:**")
-    crew_members = movie_details.get('credits', {}).get('crew', [])
-    directors = [crew_member.get('name') for crew_member in crew_members if crew_member.get('job') == 'Director']
-    for director in directors:
-        st.write(f"- {director}")
+    display_movie_details(movie_details)
 
 # Fonction pour afficher les détails du film à partir de l'API TMDb
 def display_movie_details(movie_details):
     if movie_details:
-        st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
         st.markdown(f"**Titre:** {movie_details.get('title')}")
         st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
         st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
