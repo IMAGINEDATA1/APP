@@ -23,8 +23,6 @@ def main():
     # Barre de recherche pour la recommandation
     search_option_mapping = {
         "Titre": "primaryTitle",
-        "Acteur": "primaryName",
-        "Réalisateur": "primaryName",
         "Genre": "genres",
         "Année": "startYear",
         "Société de production": "prod_name"
