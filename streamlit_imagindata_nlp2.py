@@ -58,7 +58,6 @@ def main():
             random_recos = random.sample(df_NLP['primaryTitle'].tolist(), 4)
             display_recommandations(random_recos, df_NLP, user_input_film, search_option)
 
-# Fonction pour obtenir le film choisi par l'utilisateur
 def display_user_choice(keyword, similarity, df_NLP):
     # Recherche films avec mot-clé
     user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
@@ -69,17 +68,21 @@ def display_user_choice(keyword, similarity, df_NLP):
 
         # Vérifier si movie_index est un index valide dans similarity
         if 0 <= movie_index < similarity.shape[0]:
-            # Calculer la similarité cosinus pour les films correspondants
-            distances = np.mean(similarity[movie_index, :], axis=0)
-
             # Vérifier si la colonne que vous essayez d'accéder existe dans le DataFrame
             if 0 <= movie_index < similarity.shape[1]:
-                # Trier + obtenir les indices des films reco
-                sorted_indices = np.argsort(distances)[::-1]
-                # Sélection des 5 premiers indices
-                num_recommendations = min(5, len(sorted_indices))
-                movies_list = [(index, distances[index]) for index in sorted_indices[1:num_recommendations + 1]]
-                return movies_list
+                # Calculer la similarité cosinus pour les films correspondants
+                distances = np.mean(similarity[movie_index, :], axis=0)
+
+                # Vérifier si les indices sont valides dans distances
+                if len(distances) > 0:
+                    # Trier + obtenir les indices des films reco
+                    sorted_indices = np.argsort(distances)[::-1]
+                    # Sélection des 5 premiers indices
+                    num_recommendations = min(5, len(sorted_indices))
+                    movies_list = [(index, distances[index]) for index in sorted_indices[1:num_recommendations + 1]]
+                    return movies_list
+                else:
+                    st.warning("Aucune distance calculée.")
             else:
                 st.warning(f"La colonne que vous essayez d'accéder n'existe pas dans le DataFrame.")
         else:
