@@ -11,39 +11,46 @@ from sklearn.metrics.pairwise import cosine_similarity
 nltk.download('punkt')
 nltk.download('stopwords')
 
-    # Charger les DataFrames depuis l'URL
-    df_actors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_actors")
-    df_directors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_directors")
-    df_NLP = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_mainNLP")
-    df_prod = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_prod")
-    df_matrice = pd.read_pickle("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/df_matrice.pkl")
+# Charger les DataFrames depuis l'URL
+df_actors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_actors")
+df_directors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_directors")
+df_NLP = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_mainNLP")
+df_prod = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_prod")
+df_matrice = pd.read_pickle("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/df_matrice.pkl")
 
 # Fonction de nettoyage
 def clean(text):
-def clean(text):
-  tokens = nltk.word_tokenize(text.lower())
-  tokens_clean = []
+    tokens = nltk.word_tokenize(text.lower())
+    tokens_clean = []
 
-  additional_stopwords = ["'s", "ca", "n't"]
-  stopwordsenglish = set(stopwords.words('english') + additional_stopwords)
+    additional_stopwords = ["'s", "ca", "n't"]
+    stopwordsenglish = set(stopwords.words('english') + additional_stopwords)
 
-  for word in tokens:
-    word = word.strip(string.punctuation)
-    if word and word not in stopwordsenglish and not re.match(r'^\W+$', word):
-      tokens_clean.append(word)
-  cleaned_text = ' '.join(tokens_clean)
-  return cleaned_text
+    for word in tokens:
+        word = word.strip(string.punctuation)
+        if word and word not in stopwordsenglish and not re.match(r'^\W+$', word):
+            tokens_clean.append(word)
+    cleaned_text = ' '.join(tokens_clean)
+    return cleaned_text
 
 df_NLP['tags_NLP'] = df_NLP['tags_NLP'].apply(clean)
-    return cleaned_text
 
 # Fonction de stemming
 def stem(text):
-def stem(text):
-   y=[]
-   for i in text.split():
-       y.append(ps.stem(i))
-   return " ".join(y)
+    y = []
+    ps = SnowballStemmer("english")
+    for i in text.split():
+        y.append(ps.stem(i))
+    return " ".join(y)
+
+df_NLP['tags_NLP'] = df_NLP['tags_NLP'].apply(stem)
+
+# Mesure de la similarité entre 2 vecteurs
+from sklearn.metrics.pairwise import cosine_similarity
+
+cv = CountVectorizer()
+vectors = cv.fit_transform(df_NLP['tags_NLP']).toarray()
+similarity = cosine_similarity(vectors)
 
 def main():
     st.title("App de Recommandation de Films")
