@@ -65,6 +65,9 @@ def diplay_user_choice(keyword, similarity, df_NLP):
     if not user_input_film.empty:
         # Obtenir l'index du film correspondant
         movie_index = user_input_film.index[0]
+        # Afficher le type de données dans la matrice de similarité
+        st.write(f"Type de données dans la matrice de similarité : {type(similarity.iloc[movie_index].values)}")
+        
         # Calculer la similarité cosinus pour les films correspondants
         distances = np.nanmean(similarity.iloc[movie_index].values.astype(float), axis=0)
         # Trier + obtenir les indices des films reco
@@ -75,6 +78,7 @@ def diplay_user_choice(keyword, similarity, df_NLP):
         return movies_list
     else:
         return []
+
 
 
 # Fonction pour l'affichage des recommandations
