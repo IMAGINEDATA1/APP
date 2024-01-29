@@ -43,6 +43,9 @@ def main():
             similarity = pickle.load(open("df_matrice.pkl", 'rb'))
             movie_list = df_NLP['primaryTitle'].values
 
+            # Appeler la fonction pour obtenir les films similaires
+            similar_movies = get_similar_movies(user_input_film, similarity, df_NLP)
+
             # Affichage des recommandations avec boutons
             display_recommandations(similar_movies, df_NLP, user_input_film, search_option)
 
@@ -76,8 +79,6 @@ def get_similar_movies(user_input_film, similarity, df_NLP):
     else:
         return []
         
-            # Appeler la fonction pour obtenir les films similaires
-            similar_movies = get_similar_movies(user_input_film, similarity, df_NLP)
 
 # Fonction pour Affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
