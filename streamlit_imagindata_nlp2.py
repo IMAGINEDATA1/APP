@@ -66,7 +66,7 @@ def diplay_user_choice(keyword, similarity, df_NLP):
         # Obtenir l'index du film correspondant
         movie_index = user_input_film.index[0]
         # Calculer la similarité cosinus pour les films correspondants
-        distances = np.mean(similarity.iloc[movie_index].values.astype(str), axis=0)
+        distances = np.nanmean(similarity.iloc[movie_index].values.astype(float), axis=0)
         # Trier + obtenir les indices des films reco
         sorted_indices = np.argsort(distances)[::-1]
         # Sélection des 5 premiers indices
@@ -75,7 +75,6 @@ def diplay_user_choice(keyword, similarity, df_NLP):
         return movies_list
     else:
         return []
-
 
 
 # Fonction pour l'affichage des recommandations
