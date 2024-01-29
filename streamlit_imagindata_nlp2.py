@@ -66,16 +66,27 @@ def display_user_choice(keyword, similarity, df_NLP):
     if not user_input_film.empty:
         # Obtenir l'index du film correspondant
         movie_index = user_input_film.index[0]
-        # Calculer la similarité cosinus pour les films correspondants
-        distances = np.mean(similarity[movie_index, :], axis=0)
-        # Trier + obtenir les indices des films reco
-        sorted_indices = np.argsort(distances)[::-1]
-        # Sélection des 5 premiers indices
-        num_recommendations = min(5, len(sorted_indices))
-        movies_list = [(index, distances[index]) for index in sorted_indices[1:num_recommendations + 1]]
-        return movies_list
+
+        # Vérifier si movie_index est un index valide dans similarity
+        if 0 <= movie_index < similarity.shape[0]:
+            # Calculer la similarité cosinus pour les films correspondants
+            distances = np.mean(similarity[movie_index, :], axis=0)
+
+            # Vérifier si la colonne que vous essayez d'accéder existe dans le DataFrame
+            if 0 <= movie_index < similarity.shape[1]:
+                # Trier + obtenir les indices des films reco
+                sorted_indices = np.argsort(distances)[::-1]
+                # Sélection des 5 premiers indices
+                num_recommendations = min(5, len(sorted_indices))
+                movies_list = [(index, distances[index]) for index in sorted_indices[1:num_recommendations + 1]]
+                return movies_list
+            else:
+                st.warning(f"La colonne que vous essayez d'accéder n'existe pas dans le DataFrame.")
+        else:
+            st.warning(f"Index de film non valide : {movie_index}")
     else:
         return []
+
 
 # Fonction pour l'affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
