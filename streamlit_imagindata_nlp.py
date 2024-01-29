@@ -66,15 +66,18 @@ def get_similar_movies(user_input_film, similarity, df_NLP):
         # Obtenir indices films corresp.
         movie_indices = user_input_film.index
         st.write(f"Indices des films : {movie_indices}")
-        # Calcul similarite cosinus pour films corresp
-        distances = cosine_similarity(similarity.iloc[movie_indices].values.reshape(1, -1), similarity.values.reshape(1, -1))
+        
+        # Calculer la similarité cosinus pour tous les films
+        distances = cosine_similarity(similarity.values, similarity.iloc[movie_indices].values.reshape(1, -1))
         st.write(f"Distances : {distances}")
+        
         # Tri + obtenir indices des films reco
-        sorted_indices = np.argsort(distances)[::-1]
+        sorted_indices = np.argsort(distances[0])[::-1]
         st.write(f"Indices triés : {sorted_indices}")
+        
         # Sélection des 5 premiers indices
         num_recommendations = min(5, len(sorted_indices))
-        movies_list = [(index, distances[index]) for index in sorted_indices[:num_recommendations]]
+        movies_list = [(index, distances[0][index]) for index in sorted_indices[:num_recommendations]]
         return movies_list
     else:
         return []
