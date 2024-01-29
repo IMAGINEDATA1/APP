@@ -64,7 +64,7 @@ def main():
 # Fonction pour obtenir les films similaires en fonction du mot-clé
 def get_similar_movies(user_input_film, similarity, df_NLP):
     # Rechercher les films dont le titre contient le mot-clé
-    matching_movies = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
+    matching_movies = df_NLP[df_NLP['primaryTitle'].str.contains(user_input_film, case=False, na=False)]
 
     if not matching_movies.empty:
         # Obtenir les indices des films correspondants
@@ -82,7 +82,7 @@ def get_similar_movies(user_input_film, similarity, df_NLP):
         for i in movies_list:
             print(df_NLP.iloc[i].primaryTitle)
     else:
-        print(f"Aucun film trouvé avec le mot-clé '{keyword}'.")    
+        print(f"Aucun film trouvé avec le mot-clé '{user_input_film}'.")    
 
 # Fonction pour Affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
