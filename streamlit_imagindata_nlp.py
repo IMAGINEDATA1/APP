@@ -58,7 +58,7 @@ def main():
             display_recommandations(random_recos, df_NLP, user_input_film, search_option)
 
 # Fonction pour obtenir le film choisi par l'utilisateur
-def diplay_user_choice(keyword, similarity, df_NLP):
+def diplay_user_choice(user_input_film):
     # Recherche films avec mot-cle
     user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
     st.subheader("Votre choix :")
