@@ -21,29 +21,21 @@ def main():
     df_matrice = pd.read_pickle("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/df_matrice.pkl")
 
     # Barre de recherche pour la recommandation
-    search_option_mapping = {
-        "Titre": "primaryTitle",
-        "Genre": "genres",
-        "Année": "startYear",
-        "Société de production": "prod_name"
-    }
+    search_option_mapping = {"Titre": "primaryTitle", "Acteur": "primaryName", "Réalisateur": "primaryName", "Genre": "genres", "Année": "startYear", "Société de production": "prod_name"}
     search_option = st.selectbox("Choisir une option de recherche", list(search_option_mapping.keys()))
     user_input_film = None
 
-    # Vérifier si la clé existe dans le mapping
-    column_key = search_option_mapping.get(search_option)
+    if search_option in search_option_mapping:
+        column_name = search_option_mapping[search_option]
 
-    if column_key is not None:
-        # Utiliser la clé pour accéder aux colonnes respectives dans chaque DataFrame
-        default_value = (
-            df_actors[column_key].iloc[0] +
-            df_directors[column_key].iloc[0] +
-            df_prod[column_key].iloc[0] +
-            df_NLP[column_key].iloc[0]
-        )
-        user_input_film = st.text_input(f"Choisir un(e) {search_option.lower()}", default_value)
+        # Vérifier l'existence de la colonne dans chaque DataFrame
+        if column_name in df_actors.columns and column_name in df_directors.columns and column_name in df_prod.columns and column_name in df_NLP.columns:
+            default_value = df_actors[column_name].iloc[0] + df_directors[column_name].iloc[0] + df_prod[column_name].iloc[0] + df_NLP[column_name].iloc[0]
+            user_input_film = st.text_input(f"Choisir un(e) {search_option.lower()}", default_value)
+        else:
+            st.error(f"La colonne '{column_name}' n'existe pas dans l'un des DataFrames.")
     else:
-        st.error(f"La clé '{search_option}' n'a pas été trouvée dans le mapping.")
+        st.error(f"Option de recherche non valide : {search_option}")
 
     if st.button("Rechercher"):
         if user_input_film:
@@ -60,7 +52,7 @@ def main():
 
 # Fonction pour obtenir le film choisi par l'utilisateur
 def display_user_choice(keyword, similarity, df_NLP):
-    # Recherche films avec mot-cle
+    # Recherche films avec mot-clé
     user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
     st.subheader("Votre choix :")
     if not user_input_film.empty:
@@ -90,7 +82,6 @@ def display_recommandations(movies_list, df_NLP, user_input_film, search_option)
         col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_NLP.loc[index, 'tconst']).get('poster_path')}", width=150, use_column_width=False)
         col.write(f"**{movie_title}**")
         col.button("Voir détails", key=f"button_{index}", on_click=display_movie_popup, args=(df_NLP.loc[index, 'tconst'],))
-
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
