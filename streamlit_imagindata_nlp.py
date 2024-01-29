@@ -77,14 +77,14 @@ def main():
             similar_movies = get_similar_movies(user_input_film, similarity, df_NLP)
 
             # Affichage des recommandations avec boutons
-            display_recommandations(similar_movies, df_NLP)
+            display_recommandations(similar_movies, df_NLP, user_input_film, search_option)
 
         else:
             st.warning("Aucun résultat trouvé.")
 
             # 4 films choisis aléatoirement comme recommandations
             random_recos = random.sample(df_NLP['primaryTitle'].tolist(), 4)
-            display_recommandations(random_recos, df_NLP)
+            display_recommandations(random_recos, df_NLP, user_input_film, search_option)
 
 # Fonction pour obtenir les films similaires en fonction du mot-clé
 def get_similar_movies(keyword, similarity_matrix, df_NLP):
@@ -116,7 +116,7 @@ def display_recommandations(movies_list, df_NLP, user_input_film, search_option)
     for col, (index, similarity_score) in zip(cols, movies_list):
         movie_title = df_NLP.loc[index, 'primaryTitle']
         col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_NLP.loc[index, 'tconst']).get('poster_path')}", width=150, use_column_width=False)
-        col.write(f"**{movie_title}** - Similarité: {similarity_score:.2%}")
+        col.write(f"**{movie_title}**")
         col.button("Voir détails", key=f"button_{index}", on_click=display_movie_popup, args=(df_NLP.loc[index, 'tconst'],))
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
