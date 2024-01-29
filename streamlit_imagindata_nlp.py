@@ -47,7 +47,6 @@ def main():
             similar_movies = get_similar_movies(user_input_film, similarity, df_NLP)
 
             # Affichage des recommandations avec boutons
-            get_similar_movies(user_input_film, similarity, df_NLP)
             display_recommandations(similar_movies, df_NLP, user_input_film, search_option)
 
         else:
@@ -58,17 +57,21 @@ def main():
             display_recommandations(random_recos, df_NLP, user_input_film, search_option)
 
 # Fonction pour obtenir les films similaires en fonction du mot-clé
-def get_similar_movies(user_input_film):
+def get_similar_movies(user_input_film, similarity, df_NLP):
     # Recherche films avec mot-cle
-    user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
+    user_input_films = df_NLP[df_NLP['primaryTitle'].str.contains(user_input_film, case=False, na=False)]
     st.subheader("Votre choix :")
-    if not user_input_film.empty:
+    
+    if not user_input_films.empty:
         # Obtenir indices films corresp.
-        movie_indices = df_NLP['primaryTitle'].index[0]
+        movie_indices = user_input_films.index
+        st.write(f"Indices des films : {movie_indices}")
         # Calcul similarite cosinus pour films corresp
-        distances = np.mean(similarity, axis=0)
+        distances = similarity.iloc[movie_indices, :].mean(axis=0)
+        st.write(f"Distances : {distances}")
         # Tri + obtenir indices des films reco
         sorted_indices = np.argsort(distances)[::-1]
+        st.write(f"Indices triés : {sorted_indices}")
         # Sélection des 5 premiers indices
         num_recommendations = min(5, len(sorted_indices))
         movies_list = [(index, distances[index]) for index in sorted_indices[1:num_recommendations + 1]]
@@ -82,6 +85,13 @@ def display_recommandations(movies_list, df_NLP, user_input_film, search_option)
 
     # Utiliser des colonnes pour afficher les recommandations en ligne
     cols = st.columns(len(movies_list))
+
+    # Afficher les informations sur chaque recommandation
+    for col, (index, similarity_score) in zip(cols, movies_list):
+        movie_title = df_NLP.loc[index, 'primaryTitle']
+        col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_NLP.loc[index, 'tconst']).get('poster_path')}", width=150, use_column_width=False)
+        col.write(f"**{movie_title}**")
+        col.button("Voir détails", key=f"button_{index}", on_click=display_movie_popup, args=(df_NLP.loc[index, 'tconst'],))
 
     # Afficher les informations sur chaque recommandation
     for col, (index, similarity_score) in zip(cols, movies_list):
