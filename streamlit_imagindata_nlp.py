@@ -28,14 +28,7 @@ def main():
     df_matrice = pd.read_pickle("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/df_matrice.pkl")
 
     # Barre de recherche pour la recommandation
-    search_option_mapping = {
-        "Titre": "primaryTitle",
-        "Acteur": "primaryName",
-        "Réalisateur": "primaryName",
-        "Genre": "genres",
-        "Année": "startYear",
-        "Société de production": "prod_name"
-    }
+    search_option_mapping = {"Titre": "primaryTitle", "Acteur": "primaryName", "Réalisateur": "primaryName", "Genre": "genres", "Année": "startYear", "Société de production": "prod_name"}
     search_option = st.selectbox("Choisir une option de recherche", list(search_option_mapping.keys()))
     user_input_film = None
 
@@ -46,28 +39,35 @@ def main():
 
     if st.button("Rechercher"):
         if user_input_film:
+
+            similarity = pickle.load(open("df_matrice.pkl", 'rb'))
+            movie_list = df_NLP['primaryTitle'].values
+
             # Appeler la fonction pour obtenir les films similaires
-            similar_movies = diplay_user_choice(user_input_film, df_matrice, df_NLP)
+            similar_movies = get_similar_movies(user_input_film, similarity, df_NLP)
 
             # Affichage des recommandations avec boutons
+            get_similar_movies(user_input_film, similarity, df_NLP)
             display_recommandations(similar_movies, df_NLP, user_input_film, search_option)
+
         else:
             st.warning("Aucun résultat trouvé.")
+
             # 4 films choisis aléatoirement comme recommandations
             random_recos = random.sample(df_NLP['primaryTitle'].tolist(), 4)
             display_recommandations(random_recos, df_NLP, user_input_film, search_option)
 
-# Fonction pour obtenir le film choisi par l'utilisateur
-def diplay_user_choice(user_input_film):
+# Fonction pour obtenir les films similaires en fonction du mot-clé
+def get_similar_movies(user_input_film):
     # Recherche films avec mot-cle
     user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
     st.subheader("Votre choix :")
     if not user_input_film.empty:
-        # Obtenir l'index du film correspondant
-        movie_index = user_input_film.index[0]
-        # Calculer la similarité cosinus pour les films correspondants
-        distances = np.mean(similarity[movie_index], axis=0)
-        # Trier + obtenir les indices des films reco
+        # Obtenir indices films corresp.
+        movie_indices = df_NLP['primaryTitle'].index[0]
+        # Calcul similarite cosinus pour films corresp
+        distances = np.mean(similarity, axis=0)
+        # Tri + obtenir indices des films reco
         sorted_indices = np.argsort(distances)[::-1]
         # Sélection des 5 premiers indices
         num_recommendations = min(5, len(sorted_indices))
@@ -76,7 +76,7 @@ def diplay_user_choice(user_input_film):
     else:
         return []
 
-# Fonction pour l'affichage des recommandations
+# Fonction pour Affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
     st.subheader("Autres films recommandés:")
 
@@ -84,12 +84,11 @@ def display_recommandations(movies_list, df_NLP, user_input_film, search_option)
     cols = st.columns(len(movies_list))
 
     # Afficher les informations sur chaque recommandation
-    for col, (index, _) in zip(cols, movies_list):
+    for col, (index, similarity_score) in zip(cols, movies_list):
         movie_title = df_NLP.loc[index, 'primaryTitle']
         col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_NLP.loc[index, 'tconst']).get('poster_path')}", width=150, use_column_width=False)
         col.write(f"**{movie_title}**")
         col.button("Voir détails", key=f"button_{index}", on_click=display_movie_popup, args=(df_NLP.loc[index, 'tconst'],))
-
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
