@@ -4,14 +4,7 @@ import pandas as pd
 import numpy as np
 import nltk
 from nltk.corpus import stopwords
-import re
-import string
-from sklearn.feature_extraction.text import CountVectorizer
-from nltk.stem.snowball import SnowballStemmer
-from sklearn.metrics.pairwise import cosine_similarity
 import random
-import base64
-import pickle
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -39,20 +32,25 @@ def main():
     search_option = st.selectbox("Choisir une option de recherche", list(search_option_mapping.keys()))
     user_input_film = None
 
-    if search_option in search_option_mapping:
-        column_name = search_option_mapping[search_option]
-        
-        default_value = (df_actors[search_option_mapping[search_option]].iloc[0] +
-                 df_directors[search_option_mapping[search_option]].iloc[0] +
-                 df_prod[search_option_mapping[search_option]].iloc[0] +
-                 df_NLP[search_option_mapping[search_option]].iloc[0])
+    # Vérifier si la clé existe dans le mapping
+    column_key = search_option_mapping.get(search_option)
 
+    if column_key is not None:
+        # Utiliser la clé pour accéder aux colonnes respectives dans chaque DataFrame
+        default_value = (
+            df_actors[column_key].iloc[0] +
+            df_directors[column_key].iloc[0] +
+            df_prod[column_key].iloc[0] +
+            df_NLP[column_key].iloc[0]
+        )
         user_input_film = st.text_input(f"Choisir un(e) {search_option.lower()}", default_value)
+    else:
+        st.error(f"La clé '{search_option}' n'a pas été trouvée dans le mapping.")
 
     if st.button("Rechercher"):
         if user_input_film:
             # Appeler la fonction pour obtenir les films similaires
-            similar_movies = diplay_user_choice(user_input_film, df_matrice, df_NLP)
+            similar_movies = display_user_choice(user_input_film, df_matrice, df_NLP)
 
             # Affichage des recommandations avec boutons
             display_recommandations(similar_movies, df_NLP, user_input_film, search_option)
@@ -63,7 +61,7 @@ def main():
             display_recommandations(random_recos, df_NLP, user_input_film, search_option)
 
 # Fonction pour obtenir le film choisi par l'utilisateur
-def diplay_user_choice(keyword, similarity, df_NLP):
+def display_user_choice(keyword, similarity, df_NLP):
     # Recherche films avec mot-cle
     user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
     st.subheader("Votre choix :")
@@ -80,7 +78,6 @@ def diplay_user_choice(keyword, similarity, df_NLP):
         return movies_list
     else:
         return []
-
 
 # Fonction pour l'affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
