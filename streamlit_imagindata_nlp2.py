@@ -67,7 +67,7 @@ def diplay_user_choice(keyword, similarity, df_NLP):
         movie_index = user_input_film.index[0]
         
         # Nettoyer la matrice de similarité pour s'assurer que toutes les valeurs sont numériques
-        similarity_cleaned = similarity.applymap(lambda x: float(x) if isinstance(x, (int, float, str)) else np.nan)
+        similarity_cleaned = similarity.applymap(lambda x: float(x) if isinstance(x, (int, float)) else np.nan)
         
         # Calculer la similarité cosinus pour les films correspondants
         distances = np.nanmean(similarity_cleaned.iloc[movie_index], axis=0)
@@ -79,6 +79,7 @@ def diplay_user_choice(keyword, similarity, df_NLP):
         return movies_list
     else:
         return []
+
 
 
 
