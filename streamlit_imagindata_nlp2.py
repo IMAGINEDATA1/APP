@@ -95,15 +95,24 @@ def display_user_choice(keyword, similarity, df_NLP):
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
     st.subheader("Autres films recommandés:")
 
-    # Utiliser des colonnes pour afficher les recommandations en ligne
-    cols = st.columns(len(movies_list))
+    # Vérifier si movies_list est une liste non vide
+    if movies_list:
+        # Utiliser des colonnes pour afficher les recommandations en ligne
+        cols = st.columns(len(movies_list))
 
-    # Afficher les informations sur chaque recommandation
-    for col, (index, _) in zip(cols, movies_list):
-        movie_title = df_NLP.loc[index, 'primaryTitle']
-        col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_NLP.loc[index, 'tconst']).get('poster_path')}", width=150, use_column_width=False)
-        col.write(f"**{movie_title}**")
-        col.button("Voir détails", key=f"button_{index}", on_click=display_movie_popup, args=(df_NLP.loc[index, 'tconst'],))
+        # Afficher les informations sur chaque recommandation
+        for col, (index, _) in zip(cols, movies_list):
+            # Vérifier si index est un index valide dans df_NLP
+            if 0 <= index < df_NLP.shape[0]:
+                movie_title = df_NLP.loc[index, 'primaryTitle']
+                col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_NLP.loc[index, 'tconst']).get('poster_path')}", width=150, use_column_width=False)
+                col.write(f"**{movie_title}**")
+                col.button("Voir détails", key=f"button_{index}", on_click=display_movie_popup, args=(df_NLP.loc[index, 'tconst'],))
+            else:
+                st.warning(f"Index de film non valide : {index}")
+    else:
+        st.warning("Aucune recommandation disponible.")
+
 
 # Fonction pour obtenir les informations d'un film à partir de l'API TMDb
 def get_movie_details(movie_id):
