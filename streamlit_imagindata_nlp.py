@@ -44,8 +44,6 @@ def stem(text):
    for i in text.split():
        y.append(ps.stem(i))
    return " ".join(y)
-df_NLP['tags_NLP'] = df_NLP['tags_NLP'].apply(stem)
-    return " ".join(y)
 
 def main():
     st.title("App de Recommandation de Films")
