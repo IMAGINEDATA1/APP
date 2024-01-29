@@ -4,7 +4,7 @@ import pickle
 import requests
 
 # Charger les données
-movies = pickle.load(open("t_mainPKL.pkl", "rb"))
+movies = pickle.load(open("df_NLP.pkl", "rb"))
 similarity = pickle.load(open("df_matrice.pkl", "rb"))
 df_actors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_actors")
 df_directors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_directors")
