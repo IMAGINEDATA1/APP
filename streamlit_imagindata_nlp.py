@@ -56,41 +56,33 @@ def main():
             random_recos = random.sample(df_NLP['primaryTitle'].tolist(), 4)
             display_recommandations(random_recos, df_NLP, user_input_film, search_option)
 
+            cv = CountVectorizer()
+            cv.fit_transform(df_NLP['tags_NLP']).toarray().shape
+            vectors = cv.fit_transform(df_NLP['tags_NLP']).toarray()
+            similarity = cosine_similarity(vectors)
+
 # Fonction pour obtenir les films similaires en fonction du mot-clé
 def get_similar_movies(user_input_film, similarity, df_NLP):
-    # Recherche films avec mot-cle
-    user_input_film = df_NLP[df_NLP['primaryTitle'].str.contains(user_input_film, case=False, na=False)]
-    st.subheader("Votre choix :")
-    
-    if not user_input_film.empty:
+    # Rechercher les films dont le titre contient le mot-clé
+    matching_movies = df_NLP[df_NLP['primaryTitle'].str.contains(keyword, case=False, na=False)]
 
-        cv = CountVectorizer()
-        cv.fit_transform(df_NLP['tags_NLP']).toarray().shape
-        vectors = cv.fit_transform(df_NLP['tags_NLP']).toarray()
-        
-        # Obtenir indices films corresp.
-        movie_indices = user_input_film.index
-        st.write(f"Indices des films : {movie_indices}")
+    if not matching_movies.empty:
+        # Obtenir les indices des films correspondants
+        movie_indices = matching_movies.index
+        # Calculer la similarité cosinus pour tous les films correspondants
+        distances = np.median(similarity[movie_indices], axis=0)
 
-        similarity = cosine_similarity(vectors)
-        
-        # Sélectionner les vecteurs de similarité correspondants aux films choisis
-        selected_similarity = similarity.iloc[movie_indices]
-        
-        # Calculer la similarité cosinus pour tous les films
-        distances = cosine_similarity(selected_similarity, similarity)
-        st.write(f"Distances : {distances}")
-        
-        # Tri + obtenir indices des films reco
-        sorted_indices = np.argsort(distances[0])[::-1]
-        st.write(f"Indices triés : {sorted_indices}")
-        
-        # Sélection des 5 premiers indices
+        # Trier et obtenir les indices des films recommandés
+        sorted_indices = np.argsort(distances)[::-1]
+        # Sélectionner les 5 premiers indices (à condition qu'il y en ait suffisamment)
         num_recommendations = min(5, len(sorted_indices))
-        movies_list = [(index, distances[0][index]) for index in sorted_indices[:num_recommendations]]
-        return movies_list
+        movies_list = sorted_indices[1:num_recommendations + 1]
+
+        # Afficher les titres des films recommandés
+        for i in movies_list:
+            print(df_NLP.iloc[i].primaryTitle)
     else:
-        return []
+        print(f"Aucun film trouvé avec le mot-clé '{keyword}'.")    
 
 # Fonction pour Affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
