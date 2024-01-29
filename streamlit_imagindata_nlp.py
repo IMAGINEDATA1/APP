@@ -63,19 +63,28 @@ def main():
 
 # Fonction pour obtenir les films similaires en fonction du mot-clé
 def get_similar_movies(user_input_film, similarity, df_NLP):
-
+    # Ajoutez un message de journalisation pour voir la valeur de user_input_film
     print(f"user_input_film: {user_input_film}")
+
     # Rechercher les films dont le titre contient le mot-clé
     matching_movies = df_NLP[df_NLP['primaryTitle'].str.contains(user_input_film, case=False, na=False)]
 
     if not matching_movies.empty:
         # Obtenir les indices des films correspondants
         movie_indices = matching_movies.index
+        # Ajoutez un message de journalisation pour voir les indices des films
+        print(f"movie_indices: {movie_indices}")
+
         # Calculer la similarité cosinus pour tous les films correspondants
-        distances = np.median(similarity[movie_indices], axis=0)
+        distances = np.mean(similarity[movie_indices], axis=0)
+        # Ajoutez un message de journalisation pour voir les distances
+        print(f"distances: {distances}")
 
         # Trier et obtenir les indices des films recommandés
         sorted_indices = np.argsort(distances)[::-1]
+        # Ajoutez un message de journalisation pour voir les indices triés
+        print(f"sorted_indices: {sorted_indices}")
+
         # Sélectionner les 5 premiers indices (à condition qu'il y en ait suffisamment)
         num_recommendations = min(5, len(sorted_indices))
         movies_list = sorted_indices[1:num_recommendations + 1]
@@ -84,7 +93,7 @@ def get_similar_movies(user_input_film, similarity, df_NLP):
         for i in movies_list:
             print(df_NLP.iloc[i].primaryTitle)
     else:
-        print(f"Aucun film trouvé avec le mot-clé '{user_input_film}'.")    
+        print(f"Aucun film trouvé avec le mot-clé '{user_input_film}'.")  
 
 # Fonction pour Affichage des recommandations
 def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
