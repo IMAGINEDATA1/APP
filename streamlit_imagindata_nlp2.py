@@ -1,166 +1,139 @@
 import streamlit as st
-import requests
-import pandas as pd
 import numpy as np
-import nltk
-from nltk.corpus import stopwords
-import re
-import string
-from sklearn.metrics.pairwise import cosine_similarity
+import pickle
+import requests
 import random
 
-nltk.download('punkt')
-nltk.download('stopwords')
+# Charger les données
+movies = pickle.load(open("movies_list_tuto.pkl", "rb"))
+similarity = pickle.load(open("similarity.pkl", "rb"))
 
-def main():
-    st.set_page_config(page_title="🎥 App de Recommandation de films", page_icon=":🎞️:", layout="wide", initial_sidebar_state="expanded")
-    st.title("App de Recommandation de films")
+# Fonction pour récupérer les posters à partir de l'API TMDb
+def fetch_poster(movie_id):
+    url = "https://api.themoviedb.org/3/movie/{}?api_key=db38952c66997974559ef641200fc25e&append_to_response=credits".format(movie_id)
+    data = requests.get(url).json()
+    poster_path = data['poster_path']
+    full_path = "https://image.tmdb.org/t/p/w500/" + poster_path
+    return full_path
 
-    # Charger les DataFrames depuis l'URL
-    df_actors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_actors")
-    df_directors = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_directors")
-    df_NLP = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_mainNLP")
-    df_prod = pd.read_csv("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/t_algo_prod")
-    df_matrice = pd.read_pickle("https://raw.githubusercontent.com/IMAGINEDATA1/APP/main/df_matrice.pkl")
+# Fonction de recommandation générique
+def recommend_similar_movies(data_column, query, column_name, result_limit=5):
+    matching_movies = movies[movies[data_column].str.contains(query, case=False, na=False)]
 
-    # Barre de recherche pour la recommandation
-    search_option_mapping = {
-        "Titre": "primaryTitle",
-        "Acteur": "primaryName",
-        "Réalisateur": "primaryName",
-        "Genre": "genres",
-        "Année": "startYear",
-        "Société de production": "prod_name"
-    }
-    search_option = st.selectbox("Choisir une option de recherche", list(search_option_mapping.keys()))
-    user_input_film = None
+    if not matching_movies.empty:
+        index = matching_movies.index
+        distances = np.median(similarity[index], axis=0)
+        sorted_indices = np.argsort(distances)[::-1]
+        num_recommendations = min(result_limit, len(sorted_indices))
+        movies_list = sorted_indices[1:num_recommendations + 1]
 
-    if search_option in search_option_mapping:
-        column_name = search_option_mapping[search_option]
-
-        # Vérifier l'existence de la colonne dans chaque DataFrame
-        if column_name not in [df_actors, df_directors, df_prod, df_NLP]:
-            st.error(f"La colonne '{column_name}' n'existe pas dans l'un des DataFrames.")
-            return
-
-        default_value = df_actors[column_name].iloc[0] + df_directors[column_name].iloc[0] + df_prod[column_name].iloc[0] + df_NLP[column_name].iloc[0]
-        user_input_film = st.text_input(f"Choisir un(e) {search_option.lower()}", default_value)
+        recommend_movie = []
+        recommend_poster = []
+        for i in movies_list:
+            movie_id = movies.iloc[i].tconst
+            recommend_movie.append(movies.iloc[i].primaryTitle)
+            recommend_poster.append(fetch_poster(movie_id))
+        return recommend_movie, recommend_poster
     else:
-        st.error(f"Option de recherche non valide : {search_option}")
-        return
+        st.warning(f"Aucun film trouvé avec le '{column_name}' '{query}'.")
 
-    if st.button("Rechercher"):
-        if user_input_film:
-            # Appeler la fonction pour obtenir les films similaires
-            similar_movies = display_user_choice(user_input_film, df_matrice, df_NLP, column_name)
+# Fonction de recommandation par titre de film
+def recommend_similar_movies_by_title(title):
+    return recommend_similar_movies('primaryTitle', title, 'titre')
 
-            # Affichage des recommandations avec boutons
-            display_recommandations(similar_movies, df_NLP, user_input_film, search_option)
-        else:
-            st.warning("Aucun résultat trouvé.")
-            # 4 films choisis aléatoirement comme recommandations
-            random_recos = random.sample(df_NLP['primaryTitle'].tolist(), 4)
-            display_recommandations(random_recos, df_NLP, user_input_film, search_option)
+# Fonction de recommandation par genre
+def recommend_similar_movies_by_genre(genre):
+    return recommend_similar_movies('genres', genre, 'genre')
 
-def display_user_choice(keyword, similarity, df_NLP, column_name):
-    # Recherche films avec mot-clé
-    user_input_film = df_NLP[df_NLP[column_name].str.contains(keyword, case=False, na=False)]
-    st.subheader("Votre choix :")
+# Fonction de recommandation par acteur
+def recommend_similar_movies_by_actor(actor):
+    return recommend_similar_movies('actors', actor, 'acteur')
 
-    if user_input_film.empty:
-        st.warning("Aucun résultat trouvé.")
-        return []
+# Fonction de recommandation par directeur
+def recommend_similar_movies_by_director(director):
+    return recommend_similar_movies('directors', director, 'directeur')
 
-    # Obtenir l'index du film correspondant
-    movie_index = user_input_film.index[0]
+# Affichage des détails du film
+def display_movie_popup(title):
+    matching_movies = movies[movies['primaryTitle'].str.contains(title, case=False, na=False)]
 
-    # Vérifier si movie_index est un index valide dans similarity
-    if 0 <= movie_index < similarity.shape[0]:
-        # Calculer la similarité cosinus pour les films correspondants
-        distances = np.mean(similarity[:, movie_index], axis=0)
+    if not matching_movies.empty:
+        index = matching_movies.index
+        distances = np.median(similarity[index], axis=0)
+        sorted_indices = np.argsort(distances)[::-1]
+        num_recommendations = min(1, len(sorted_indices))
+        movies_list = sorted_indices[1:num_recommendations + 1]
 
-        # Vérifier si les indices sont valides dans distances
-        if len(distances) > 0:
-            # Trier + obtenir les indices des films reco
-            sorted_indices = np.argsort(distances)[::-1]
-            # Sélection des 5 premiers indices
-            num_recommendations = min(5, len(sorted_indices))
-            movies_list = [(index, distances[index]) for index in sorted_indices[:num_recommendations]]
-            return movies_list
-        else:
-            st.warning("Aucune distance calculée.")
-            return []
+        for i in movies_list:
+            movie_id = movies.iloc[i].tconst
+            movie = movies.iloc[i]
+            st.markdown(f"**Titre:** {movie['primaryTitle']}")
+            st.markdown(f"**Tagline:** {movie['tagline']}")
+            st.markdown(f"**Aperçu:** {movie['overview']}")
+            st.write(f"**Note IMDb:** {movie['vote_average']}")
+            st.write(f"**Durée:** {movie['runtimeMinutes']}")
+            st.write(f"**Genre:** {movie['genres']}")
+            st.write(f"**Acteurs:** {movie['actors']}")
+            st.write(f"**Directeurs:** {movie['directors']}")
+            st.write(f"**Société de production:** {movie['prod_name']}")
     else:
-        st.warning(f"Index de film non valide : {movie_index}")
-        return []
+        st.warning(f"Aucun film trouvé avec le titre '{title}'.")
 
-def display_recommandations(movies_list, df_NLP, user_input_film, search_option):
+# Titre de la page
+st.header("Movie Recommender System")
+
+# Options de recherche
+search_options = ["Titre", "Genre", "Acteur"]
+search_option = st.selectbox("Choisir une option de recherche", search_options)
+
+# Champ de saisie en fonction de l'option choisie
+user_input = st.text_input(f"Ecrivez votre mot clé {search_option.lower()}", "")
+
+# Bouton de recherche
+if st.button("Rechercher"):
+    if user_input:
+        recommend_function = None
+        if search_option == "Titre":
+            recommend_function = recommend_similar_movies_by_title
+        elif search_option == "Genre":
+            recommend_function = recommend_similar_movies_by_genre
+        elif search_option == "Acteur":
+            recommend_function = recommend_similar_movies_by_actor
+
+        if recommend_function:
+            movie_name, movie_poster = recommend_function(user_input)
+
+            if movie_name:
+                st.text(movie_name[0])
+                st.image(movie_poster[0], width=300, use_column_width=False)
+
+                st.title("Recommandations :")
+
+                # Affichage des recommandations
+                col1, col2, col3, col4, col5 = st.columns(5)
+                for i in range(min(5, len(movie_name))):
+                    with col1 if i == 0 else col2 if i == 1 else col3 if i == 2 else col4 if i == 3 else col5:
+                        st.image(movie_poster[i])
+                        st.button(movie_name[i], on_click=display_movie_popup(movie_name[i]))
+            else:
+                st.warning("Aucun résultat trouvé.")
+else: 
+    st.warning("Aucun résultat trouvé.")
+
+# Display other recommendations
+random_recos = random.sample(movies['primaryTitle'].tolist(), 4)
+display_recommandations(random_recos, movies)
+
+# Function to display recommendations
+def display_recommandations(random_recos, movies):
     st.subheader("Autres films recommandés:")
 
-    # Vérifier si movies_list est une liste non vide
-    if not movies_list:
-        st.warning("Aucune recommandation disponible.")
-        return
-
     # Utiliser des colonnes pour afficher les recommandations en ligne
-    cols = st.columns(len(movies_list))
+    cols = st.columns(len(random_recos))
 
     # Afficher les informations sur chaque recommandation
-    for col, (index, _) in zip(cols, movies_list):
-        # Vérifier si index est un index valide dans df_NLP
-        if 0 <= index < df_NLP.shape[0]:
-            movie_title = df_NLP.loc[index, 'primaryTitle']
-            col.image(f"https://image.tmdb.org/t/p/w200/{get_movie_details(df_NLP.loc[index, 'tconst']).get('poster_path')}", width=150, use_column_width=False)
-            col.write(f"**{movie_title}**")
-            col.button("Voir détails", key=f"button_{index}", on_click=display_movie_popup, args=(df_NLP.loc[index, 'tconst'],))
-        else:
-            st.warning(f"Index de film non valide : {index}")
-
-def get_movie_details(movie_id):
-    api_key = "db38952c66997974559ef641200fc25e"
-    base_url = "https://api.themoviedb.org/3/movie/"
-    endpoint = str(movie_id)
-    url = f"{base_url}{endpoint}?api_key={api_key}&append_to_response=credits"
-
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return None
-
-def display_movie_popup(movie_id):
-    movie_details = get_movie_details(movie_id)
-    st.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
-    if movie_details and 'credits' in movie_details:
-        display_movie_details(movie_details)
-    else:
-        st.info("Film non trouvé ou erreur lors de la récupération des détails.")
-
-def display_movie_details(movie_details):
-    if movie_details:
-        st.markdown(f"**Titre:** {movie_details.get('title')}")
-        st.markdown(f"**Tagline:** {movie_details.get('tagline')}")
-        st.markdown(f"**Aperçu:** {movie_details.get('overview')}")
-        st.write(f"**Note IMDb:** {movie_details.get('vote_average')}")
-        st.write(f"**Nombre de votes:** {movie_details.get('vote_count')}")
-        st.write(f"**Durée:** {movie_details.get('runtime')} minutes")
-        st.write(f"**Genre:** {', '.join([genre['name'] for genre in movie_details.get('genres', [])])}")
-
-        if 'credits' in movie_details:
-            st.write("**Acteurs:**")
-            cast_members = movie_details['credits'].get('cast', [])[:3]
-            for cast_member in cast_members:
-                st.write(f"- {cast_member.get('name')}")
-
-            st.write("**Réalisateurs:**")
-            crew_members = movie_details['credits'].get('crew', [])
-            directors = [crew_member.get('name') for crew_member in crew_members if crew_member.get('job') == 'Director']
-            for director in directors:
-                st.write(f"- {director}")
-    else:
-        st.info("Film non trouvé ou erreur lors de la récupération des détails.")
-
-if __name__ == "__main__":
-    main()
-
-st.subheader("Bonne séance ! 🍿🍿🍿 ")
+    for col, index in zip(cols, random_recos):
+        movie_title = movies.loc[index, 'primaryTitle']
+        movie_details = fetch_poster(movies.loc[index, 'tconst'])
+        col.image(f"https://image.tmdb.org/t/p/w200/{movie_details.get('poster_path')}", width=150, use_column_width=False)
+        col.button(movie_title, key=f"button_{index}", on_click=display_movie_popup, args=(movie_details,))
